@@ -130,6 +130,25 @@ def rbox(x, y, z, w, d, h, r):
     return rrect(w, d, r).extrude(h).translate([x, y, z])
 
 
+FILLET = 1.0          # vertical corners on posts, columns and rests: 1 mm rounds (outside) and fillets (inside)
+
+
+def sq(x0_, y0_, x1, y1):
+    return mf.CrossSection.square([x1 - x0_, y1 - y0_]).translate([x0_, y0_])
+
+
+def round2d(cs, r=None):
+    """Round every corner of a flat outline: fillets in the inside corners, then rounds on the outside ones."""
+    r = FILLET if r is None else r
+    j = mf.JoinType.Round
+    n = 96
+    return cs.offset(r, j, 2.0, n).offset(-r, j, 2.0, n).offset(-r, j, 2.0, n).offset(r, j, 2.0, n)
+
+
+def prism(cs, z0_, z1):
+    return cs.extrude(z1 - z0_).translate([0, 0, z0_])
+
+
 def union(parts):
     return mf.Manifold.batch_boolean(parts, mf.OpType.Add)
 
@@ -165,7 +184,7 @@ def cradle(x, y, w, d, ledge_z):
 def supermini_mount():
     """Two corner hooks at the USB end + a screw post at the other end (see SM_* above)."""
     x, y, w, d, lz = SUPERMINI
-    c, wall = SM_CLR, 1.8
+    c, wall = SM_CLR, 2.4
     bx0, bx1, by0, by1 = X(x), X(x + w), Y(y), Y(y + d)        # board outline
     zb, zt = FLOOR + lz, FLOOR + lz + 1.6                       # board underside / top
     adds, cuts = [], []
@@ -176,17 +195,21 @@ def supermini_mount():
             ox0, ox1, ix0, ix1 = bx0 - c - wall, bx0 - c, bx0 - c, bx0 + SM_HOOK_IN
         else:
             ox0, ox1, ix0, ix1 = bx1 + c, bx1 + c + wall, bx1 - SM_HOOK_IN, bx1 + c
-        adds.append(cube(ox0, by1 - 4.0, FLOOR - 0.2, ox1, by1 + c + wall, lip1))          # side wall
-        adds.append(cube(min(ox0, ix0), by1 + c, FLOOR - 0.2, max(ox1, ix1), by1 + c + wall, lip1))  # back wall
-        adds.append(cube(ix0, by1 - SM_REST, FLOOR - 0.2, ix1, by1 + c + 0.01, zb))       # rest under the corner
         wall_y = by1 + c                                       # the back wall's face toward the board
+        L = sq(ox0, by1 - 4.0, ox1, wall_y + wall) + sq(min(ox0, ix0), wall_y, max(ox1, ix1), wall_y + wall)
+        rest = sq(ix0, by1 - SM_REST, ix1, wall_y + 0.01)
+        lipfoot = sq(ix0, wall_y - SM_LIP_OUT, ix1, wall_y + 0.01)
+        adds.append(prism(round2d(L + rest), FLOOR - 0.2, zb))                    # walls + rest under the corner
+        adds.append(prism(round2d(L), zb - 0.01, lip0 + 0.01))                    # walls beside the board's edge
         root = cube(ix0, wall_y - 0.01, lip0, ix1, wall_y + 0.01, lip1)
         tip = cube(ix0, wall_y - SM_LIP_OUT - 0.01, lip0 + SM_LIP_OUT, ix1, wall_y - SM_LIP_OUT, lip1)
-        adds.append(mf.Manifold.hull(root + tip))                                          # 45 degree lip
+        top = prism(L, lip0, lip1) + mf.Manifold.hull(root + tip)                 # walls + 45 degree lip
+        adds.append(top ^ prism(round2d(L + lipfoot), lip0 - 0.01, lip1 + 0.01))
     # far end: a rest under the board's end + the screw post just beyond it
     cx = (bx0 + bx1) / 2
     py = by0 - c - SM_POST_R
-    adds.append(cube(cx - 5.0, by0 - c - 0.5, FLOOR - 0.2, cx + 5.0, by0 + SM_REST, zb))
+    far = sq(cx - 5.0, by0 - c - 0.5, cx + 5.0, by0 + SM_REST) + mf.CrossSection.circle(SM_POST_R, SEG).translate([cx, py])
+    adds.append(prism(round2d(far), FLOOR - 0.2, zb))
     adds.append(cyl(zt - FLOOR + 0.2, SM_POST_R, cx, py, FLOOR - 0.2))
     cuts.append(cyl(zt - FLOOR, SM_PILOT_D / 2, cx, py, FLOOR + 1.0, 32))
     return adds, cuts
@@ -213,8 +236,14 @@ def box():
         for ex in (OW * 0.28, OW * 0.72):
             cuts.append(cyl(EAR_T + 2, EAR_HOLE_D / 2, ex, ey + EAR_W / 2, -1))
     # lid screw columns
+    inner = rrect(IW, ID, R_OUT - WALL).translate([x0, y0])
+    cols2d = None
     for cx, cy in COLS:
-        adds.append(cube(X(cx), Y(cy), FLOOR - 0.2, X(cx + COL), Y(cy + COL), H))
+        q = sq(X(cx), Y(cy), X(cx + COL), Y(cy + COL))
+        cols2d = q if cols2d is None else cols2d + q
+    cavity = round2d(inner - cols2d)            # rounding the empty space rounds the columns and fillets them in
+    adds.append(prism(inner.offset(0.5, mf.JoinType.Round) - cavity, FLOOR - 0.2, H))   # 0.5 mm into the walls so they fuse
+    for cx, cy in COLS:
         cuts.append(cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, *col_hole(cx, cy), H - INSERT_DEPTH))
     # battery-holder pads
     for px in HOLD_COLS_X:
@@ -288,7 +317,8 @@ def box_lid():
     mid = WALL / 2
     m = plate + lip                     # flat underside: it presses the gasket down
     for rx in RIBS_X:                   # stiffening ribs, inside the walls, clear of the gasket
-        m = m + cube(X(rx) - RIB_W / 2, Y(COL + 4), H - RIB_H, X(rx) + RIB_W / 2, Y(ID - COL - 4), H + 0.1)
+        rib = rrect(RIB_W, ID - 2 * COL - 8, RIB_W / 2 - 0.01).translate([X(rx) - RIB_W / 2, Y(COL + 4)])
+        m = m + prism(rib, H - RIB_H, H + 0.1)
     for cx, cy in COLS:
         hx, hy = col_hole(cx, cy)
         m = m - cyl(LID_T + 2, SCREW_CLEAR / 2, hx, hy, H - 1)
@@ -372,11 +402,13 @@ def float_bracket():
 
 
 def write_stl(m, path):
-    mesh = m.to_mesh()
+    mesh = m.simplify(0.0005).to_mesh()               # merges near-duplicate points (0.0005 mm) so the STL is watertight
     v = np.asarray(mesh.vert_properties)[:, :3].astype(np.float32)
     f = np.asarray(mesh.tri_verts)
     tri = v[f]
     n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
+    keep = np.linalg.norm(n, axis=1) > 1e-9          # drop zero-area slivers left by the booleans
+    tri, n, f = tri[keep], n[keep], f[keep]
     n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-12
     data = np.zeros(len(f), dtype=np.dtype([("n", "<3f4"), ("v", "<9f4"), ("a", "<u2")]))
     data["n"], data["v"] = n, tri.reshape(-1, 9)

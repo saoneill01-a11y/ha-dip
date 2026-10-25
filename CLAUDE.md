@@ -11,4 +11,7 @@ before anything gets printed or built, and ask before anything that costs money 
   USB-C faces into the box and Sean charges it with the lid off (keep the plug clearance, `PLUG_ZONE`).
 - Firmware: `firmware/dip.yaml` (ESPHome; validate with `esphome config`, test with `esphome compile`). HA side: `ha/dip_package.yaml`.
 - Pins: GPIO3 float (wake pin, 100k pull-up), GPIO4 battery divider, GPIO6 Trig, GPIO7 Echo, GPIO5 DS18B20 water temperature (4.7k pull-up). Wiring picture: `docs/wiring.svg` (render to PNG with cairosvg).
+- Sean's printing rules: no square vertical corners (1 mm rounds outside, 1 mm fillets inside: `round2d` / `FILLET`),
+  and nothing that needs supports (overhangs at 45 degrees or less, short bridges only). Check new parts for both.
+- STLs are written watertight (`write_stl` merges near-duplicate points and drops zero-area slivers).
 - Commit as Sean; push to `main` after each piece of work.
