@@ -33,8 +33,8 @@ grey, blue, green, amber, dark = (0.70, 0.73, 0.78), (0.30, 0.50, 0.85), (0.35, 
 views([f"{d}/box.stl", holder_p, sensor_p, mini_p, plug_p], f"{d}/preview_box.png",
       [(60, -30, "Box upright, lid off (USB-C cable plugged in)"), (-20, -35, "Bottom end: 3 cable glands")],
       colors=[grey, amber, blue, green, dark], size=(12, 6.4))
-views([f"{d}/box_lid.stl"], f"{d}/preview_lid.png",
-      [(-45, -60, "Lid (top), washer seats round the screws"), (40, -60, "Lid underside as printed: gasket tongue, drip lip")], size=(11, 4.8))
+views([f"{d}/box_lid.stl", f"{d}/gasket.stl"], f"{d}/preview_lid.png",
+      [(-45, -60, "Lid (top), washer seats round the screws"), (40, -60, "Lid underside as printed (drip lip) + TPU gasket")], colors=[grey, (0.2, 0.2, 0.22)], offsets=[None, (100, 0, 0)], size=(12, 4.8))
 off = [None, (0, 0, 70), (120, 0, 0)]
 views([f"{d}/pipe_cap.stl", f"{d}/pipe_cap_top.stl", f"{d}/float_bracket.stl"], f"{d}/preview_pipe.png",
       [(25, -50, "Pipe cap, cap top + rod socket, float bracket"), (-55, -50, "Underneath: the two probe holes")],

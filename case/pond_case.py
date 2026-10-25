@@ -59,9 +59,10 @@ COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL),
         (IW / 2 - COL / 2, ID - COL),          # top end, middle
         (IW - COL, PORT_Y + 16.0)]             # right side, above the plug zone
 
-# gasket: groove in the box rim, tongue under the lid (print the gasket in TPU, or lay 1.5 mm foam cord)
+# gasket: a printed TPU ring sits in a groove in the box rim and stands 0.5 mm proud; the flat lid squeezes it
+# about 25 % (right for 95A TPU). 1.5 mm foam cord in the groove works too.
 GROOVE_W, GROOVE_D = 1.8, 1.4
-TONGUE_W, TONGUE_H = 1.0, 0.9
+GASKET_W, GASKET_H = 1.6, 1.9
 LID_T, LID_LIP, LID_OVER = 3.0, 4.0, 1.6           # lid thickness, drip lip height, overhang past the walls
 
 # post-mount ears on the back plate
@@ -185,17 +186,25 @@ def box_lid():
     lip = (rbox(-o, -o, H - LID_LIP, OW + 2 * o, OD + 2 * o, LID_LIP + 0.1, R_OUT + o)
            - rbox(-0.3, -0.3, H - LID_LIP - 1, OW + 0.6, OD + 0.6, LID_LIP + 2, R_OUT + 0.3))
     mid = WALL / 2
-    t_out = (rrect(OW - 2 * (mid - TONGUE_W / 2), OD - 2 * (mid - TONGUE_W / 2), R_OUT - mid + TONGUE_W / 2)
-             .translate([mid - TONGUE_W / 2, mid - TONGUE_W / 2]))
-    t_in = (rrect(OW - 2 * (mid + TONGUE_W / 2), OD - 2 * (mid + TONGUE_W / 2), R_OUT - mid - TONGUE_W / 2)
-            .translate([mid + TONGUE_W / 2, mid + TONGUE_W / 2]))
-    tongue = (t_out - t_in).extrude(TONGUE_H + 0.1).translate([0, 0, H - TONGUE_H])
-    m = plate + lip + tongue
+    m = plate + lip                     # flat underside: it presses the gasket down
     for cx, cy in COLS:
         hx, hy = col_hole(cx, cy)
         m = m - cyl(LID_T + 2, SCREW_CLEAR / 2, hx, hy, H - 1)
         m = m - cyl(1.2, 3.6, hx, hy, H + LID_T - 1.2)          # seat for a rubber/nylon sealing washer
     return m.rotate([180, 0, 0]).translate([0, OD, H + LID_T])
+
+
+def rim_ring(width):
+    """A closed band of the given width running down the middle of the box rim (the groove's centre line)."""
+    mid = WALL / 2
+    out = rrect(OW - 2 * (mid - width / 2), OD - 2 * (mid - width / 2), R_OUT - mid + width / 2).translate([mid - width / 2, mid - width / 2])
+    inn = rrect(OW - 2 * (mid + width / 2), OD - 2 * (mid + width / 2), R_OUT - mid - width / 2).translate([mid + width / 2, mid + width / 2])
+    return out - inn
+
+
+def gasket():
+    """TPU gasket for the box rim groove. Print flat as is, 100 % infill, 2 perimeters."""
+    return rim_ring(GASKET_W).extrude(GASKET_H)
 
 
 def pipe_cap():
@@ -272,7 +281,7 @@ def write_stl(m, path):
     return len(f)
 
 
-PARTS = {"box": box, "box_lid": box_lid, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket}
+PARTS = {"box": box, "box_lid": box_lid, "gasket": gasket, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket}
 
 if __name__ == "__main__":
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")
