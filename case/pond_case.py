@@ -54,7 +54,9 @@ SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5
 # The SuperMini has no screw holes: its USB end slides under two corner lips (either side of the USB-C socket),
 # then a printed tab (esp_clamp.stl) screws down over its other end with one M2.5 x 6 into a post.
 # The board rests on its two short ends only, so wires soldered into the pin holes along its long edges are clear.
-SM_CLR, SM_HOOK_IN, SM_LIP_T, SM_REST = 0.4, 3.5, 1.4, 1.5
+SM_CLR, SM_HOOK_IN, SM_LIP_T, SM_REST = 0.4, 3.5, 2.0, 1.5
+SM_LIP_OVER = 1.2     # how far each lip reaches over the board's end; it only sticks out from the back wall, so it
+                      # prints without supports (no part reaches out sideways past an upright)
 SM_POST_R, SM_PILOT_D, SM_TAB_T, SM_TAB_W, SM_TAB_OVER = 3.4, 2.2, 2.0, 12.0, 1.8
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
@@ -167,17 +169,16 @@ def supermini_mount():
     bx0, bx1, by0, by1 = X(x), X(x + w), Y(y), Y(y + d)        # board outline
     zb, zt = FLOOR + lz, FLOOR + lz + 1.6                       # board underside / top
     adds, cuts = [], []
-    for side in (0, 1):                                         # USB-end corner hooks
+    lip0, lip1 = zt + 0.3, zt + 0.3 + SM_LIP_T                  # the lip over the board's top, 0.3 mm play
+    for side in (0, 1):                                         # USB-end corner posts, either side of the socket
         if side == 0:
-            hx0, hx1 = bx0 - c - wall, bx0 + SM_HOOK_IN
+            ox0, ox1, ix0, ix1 = bx0 - c - wall, bx0 - c, bx0 - c, bx0 + SM_HOOK_IN
         else:
-            hx0, hx1 = bx1 - SM_HOOK_IN, bx1 + c + wall
-        adds.append(cube(hx0, by1 - 4.0, FLOOR - 0.2, hx1, by1 + c + wall, zt + 0.3 + SM_LIP_T))
-    # the slot the board slides into, then clear everything under the board except a 1.5 mm rest at its end
-    cuts.append(cube(bx0 - c, by1 - 6.0, zb, bx1 + c, by1 + c, zt + 0.3))
-    cuts.append(cube(bx0 + SM_HOOK_IN, by1 - 6.0, FLOOR, bx1 - SM_HOOK_IN, by1 + c + wall + 1, zt + 2 + SM_LIP_T))
-    cuts.append(cube(bx0 - c - wall - 1, by1 - 6.0, FLOOR, bx1 + c + wall + 1, by1 - SM_REST, zb))
-    cuts.append(cube(bx0 - c - wall - 1, by1 - 6.0, zt + 0.3, bx1 + c + wall + 1, by1 - SM_HOOK_IN + 1.5, zt + 3))
+            ox0, ox1, ix0, ix1 = bx1 + c, bx1 + c + wall, bx1 - SM_HOOK_IN, bx1 + c
+        adds.append(cube(ox0, by1 - 4.0, FLOOR - 0.2, ox1, by1 + c + wall, lip1))          # side wall
+        adds.append(cube(min(ox0, ix0), by1 + c, FLOOR - 0.2, max(ox1, ix1), by1 + c + wall, lip1))  # back wall
+        adds.append(cube(ix0, by1 - SM_REST, FLOOR - 0.2, ix1, by1 + c + 0.01, zb))       # rest under the corner
+        adds.append(cube(ix0, by1 - SM_LIP_OVER, lip0, ix1, by1 + c + 0.01, lip1))        # lip, from the back wall
     # far end: a rest under the board's end + the screw post just beyond it
     cx = (bx0 + bx1) / 2
     py = by0 - c - SM_POST_R
