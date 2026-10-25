@@ -18,8 +18,10 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | ESP32-C3 SuperMini | on hand |
 | 18650 battery holder (USB-C + micro-USB, same as BLIPR) + 18650 cell | on hand. Set its slide switch SW1 to **stay on** (not auto-shutdown) |
 | JSN-SR20-Y1 ultrasonic sensor (dual probes, 48 x 23 mm board) | ordered |
-| Mini vertical float switch (PP, M10 stem) | 16" leads: extend with outdoor 2-core cable, solder + adhesive-lined heat shrink |
-| Resistors | 360 kOhm (sensor low-power mode, soldered on the sensor board's MODE pad), 3 x 100 kOhm (battery reading divider + float pull-up) |
+| Mini vertical float switch (PP, M10 stem) | 16" leads: spliced onto the 4-core cable inside the pipe cap's chamber |
+| DS18B20 waterproof temperature probe (1 m) | to buy. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
+| 4-core outdoor cable, box to pipe cap | carries 3V3, GND, float, probe data through one gland. Splices: solder + adhesive-lined heat shrink |
+| Resistors | 360 kOhm (sensor low-power mode, soldered on the sensor board's MODE pad), 3 x 100 kOhm (battery reading divider + float pull-up), 4.7 kOhm (temperature probe pull-up) |
 | 3" PVC pipe, about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
 | 1/2" PVC drop rod from the pergola beam | about 7 ft; measure in place |
 | 3 x PG7 cable glands | on hand |
@@ -37,11 +39,12 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | GPIO4 | middle of the 100k/100k divider from the cell's + (battery reading) |
 | GPIO6 | sensor Trig |
 | GPIO7 | sensor Echo |
+| GPIO5 | temperature probe data (yellow) + 4.7k to 3V3; probe red to 3V3, black to GND |
 
 ## Firmware (`firmware/`) and Home Assistant (`ha/`)
 
 - `firmware/pond-sensor.yaml`: ESPHome. Wakes every 20 min (every 2 min while the float is low), takes 5 readings,
-  sends the middle one, sleeps. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in.
+  sends the middle one plus the water temperature, sleeps. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in.
   First flash over USB: `esphome run firmware/pond-sensor.yaml` (hold BOOT, tap RESET if the board isn't found).
   Test-compiled with ESPHome 2026.10.0.
 - `ha/pond_package.yaml`: Home Assistant package. Pond level in inches below full, "Pond water low", a critical
@@ -60,7 +63,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | `box.stl` | electronics box, stands upright on the pergola post (about 3" x 5.75" x 1.5"): BLIPR's battery-holder mount, cradles for the sensor board and SuperMini, 3 glands in the bottom end. No charge-port or button holes: charge through the holder's USB-C with the lid off, or take the cell out | as is, back plate down. PETG or ASA |
 | `box_lid.stl` | flat-bottomed lid with a drip edge and washer seats round the 6 screws | as is (already flipped) |
 | `gasket.stl` | TPU ring for the rim groove: 1.6 wide x 1.9 tall, stands 0.5 mm proud so the lid squeezes it about 25 % | 95A TPU, flat, 100 % infill |
-| `pipe_cap.stl` | slides over the 3" pipe, holds both probes, cable chamber above | as is |
+| `pipe_cap.stl` | slides over the 3" pipe, holds both probes, cable chamber above, holes for the float and temperature-probe cables | as is |
 | `pipe_cap_top.stl` | closes the chamber, socket for the 1/2" rod (M4 set screw) | as is |
 | `float_bracket.stl` | holds the float switch inside the pipe | as is |
 

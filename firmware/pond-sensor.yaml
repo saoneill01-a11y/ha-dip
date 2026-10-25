@@ -4,13 +4,14 @@
 #   - Wakes every 20 minutes, takes 5 distance readings, sends the middle one to Home Assistant, sleeps again.
 #   - The float switch wakes it IMMEDIATELY when the water drops (GPIO3). While the float stays low it checks
 #     every 2 minutes, and it also wakes the moment the float comes back up.
-#   - Sends battery voltage and %, float state and Wi-Fi signal each time.
+#   - Sends pond water temperature, battery voltage and %, float state and Wi-Fi signal each time.
 #   - Turn on "Pond sensor stay awake" in Home Assistant to keep it awake for updates (it checks on each wake).
 #
 # Pins (see ../docs/wiring.svg):
 #   GPIO3  float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
 #   GPIO4  battery voltage through a 100k/100k divider
 #   GPIO6  sensor Trig     GPIO7  sensor Echo
+#   GPIO5  DS18B20 water-temperature probe data, 4.7k pull-up to 3V3
 #
 # First flash over USB: plug in, run `esphome run pond-sensor.yaml`. If it isn't found, hold BOOT, tap RESET.
 # Copy secrets.example.yaml to secrets.yaml and fill it in (secrets.yaml stays out of git).
@@ -87,6 +88,8 @@ script:
             - component.update: distance_raw
             - delay: 250ms
       - component.update: battery_voltage
+      - component.update: water_temp
+      - delay: 800ms           # the probe needs 750 ms to measure
       - delay: 1s            # let the last values reach Home Assistant
       - if:
           condition:
@@ -111,7 +114,17 @@ script:
             - script.execute: take_reading
             - delay: 30s
 
+one_wire:
+  - platform: gpio
+    pin: GPIO5
+
 sensor:
+  - platform: dallas_temp
+    id: water_temp
+    name: "Water temperature"
+    update_interval: never   # the script reads it on each wake
+    accuracy_decimals: 1
+
   - platform: ultrasonic
     id: distance_raw
     name: "Distance to water"

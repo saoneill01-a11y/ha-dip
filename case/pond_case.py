@@ -79,6 +79,7 @@ PROBE_D = 18.6        # PROBE HOLE: measure your probe body and change this (pro
 PROBE_SPACING = 44.0  # centre to centre
 CHAMBER_H = 26.0      # space above the plate for the probe backs and cables
 FLOAT_WIRE_D = 5.0
+TEMP_WIRE_D = 5.0     # DS18B20 probe cable up through the plate
 ROD_OD = 21.3         # 1/2" schedule 40 PVC outside diameter (EMT 1/2" is 17.9: change it)
 ROD_CLR, ROD_DEPTH, ROD_BOSS_WALL = 0.5, 32.0, 3.5
 CAP_SCREW_R = 0.0     # set below
@@ -217,6 +218,8 @@ def pipe_cap():
         m = m - cyl(PLATE_T + 2, PROBE_D / 2, sx, 0, SKIRT_H - 1)
     # float-switch wire up through the plate
     m = m - cyl(PLATE_T + 2, FLOAT_WIRE_D / 2, 0, -ri + 10, SKIRT_H - 1)
+    # water-temperature probe cable up through the plate (clear of the probes and the screw bosses)
+    m = m - cyl(PLATE_T + 2, TEMP_WIRE_D / 2, -20, ri - 14, SKIRT_H - 1)
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # three screw bosses inside the chamber for the top

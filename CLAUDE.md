@@ -9,5 +9,5 @@ before anything gets printed or built, and ask before anything that costs money 
   `case/user_edits/base_from_sean_2026-10-22.stl`). The box has no charge-port or button holes: the holder's
   USB-C faces into the box and Sean charges it with the lid off (keep the plug clearance, `PLUG_ZONE`).
 - Firmware: `firmware/pond-sensor.yaml` (ESPHome; validate with `esphome config`, test with `esphome compile`). HA side: `ha/pond_package.yaml`.
-- Pins: GPIO3 float (wake pin, 100k pull-up), GPIO4 battery divider, GPIO6 Trig, GPIO7 Echo. Wiring picture: `docs/wiring.svg` (render to PNG with cairosvg).
+- Pins: GPIO3 float (wake pin, 100k pull-up), GPIO4 battery divider, GPIO6 Trig, GPIO7 Echo, GPIO5 DS18B20 water temperature (4.7k pull-up). Wiring picture: `docs/wiring.svg` (render to PNG with cairosvg).
 - Commit as Sean; push to `main` after each piece of work.
