@@ -26,7 +26,9 @@ SEG = 64
 # ------------------------------------------------------------------ box
 WALL = 3.2          # thicker than BLIPR so the rim can carry a gasket groove
 FLOOR = 2.4         # back plate (against the post); same as BLIPR so the holder pads are the same height
-IW, ID, IH = 72.0, 140.0, 34.0   # inside width (X), height up the post (Y), depth out from the post (Z)
+IW, ID, IH = 72.0, 140.0, 40.0   # inside width (X), height up the post (Y), depth out from the post (Z)
+# IH 40 (was 34): the sensor board's two probe plugs and its 4 jumper wires stand straight up off the board's
+# connector side, which faces the lid. 40 leaves about 25 mm above the board even under a lid rib.
 R_OUT = 6.0
 OW, OD = IW + 2 * WALL, ID + 2 * WALL
 x0, y0 = WALL, WALL                # inside origin
@@ -43,7 +45,7 @@ PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
-SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 8.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up
+SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 8.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
 SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 

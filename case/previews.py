@@ -24,7 +24,17 @@ plug = (P.cube(hx1 + 0.3, Y(P.PORT_Y) - 4.2, P.PAD_TOP - 1.4, hx1 + 22, Y(P.PORT
         + mf.Manifold.cylinder(30, 2.2, 2.2, 24).translate([hx1 + 36, Y(P.PORT_Y), P.PAD_TOP + 1.8]))
 plug_p = dummy("plug", plug)
 sx, sy, sw, sd, sz = P.SENSOR_BOARD
-sensor_p = dummy("sensor", P.cube(X(sx), Y(sy), F + sz, X(sx + sw), Y(sy + sd), F + sz + 1.6))
+bz = F + sz + 1.6                       # top of the sensor board (its plug side faces the lid)
+plugs = None
+for py in (sy + 10.0, sy + sd - 10.0):  # the two probe plugs (JST XH, 2-pin) standing up, cable bent toward the glands
+    cx, cy = X(sx + sw / 2), Y(py)
+    p = (P.cube(cx - 3.0, cy - 2.6, bz, cx + 3.0, cy + 2.6, bz + 11.0)
+         + mf.Manifold.cylinder(8.0, 1.7, 1.7, 16).translate([cx, cy, bz + 11.0])
+         + mf.Manifold.cylinder(30.0, 1.7, 1.7, 16).rotate([90, 0, 0]).translate([cx, cy, bz + 19.0]))
+    plugs = p if plugs is None else plugs + p
+hx = X(sx) + 1.5                        # the 4 jumper wires on the header, standing up then bending down
+plugs = plugs + P.cube(hx - 1.3, Y(sy + sd / 2) - 5.2, bz, hx + 1.3, Y(sy + sd / 2) + 5.2, bz + 16.0)
+sensor_p = dummy("sensor", P.cube(X(sx), Y(sy), F + sz, X(sx + sw), Y(sy + sd), F + sz + 1.6) + plugs)
 mx, my, mw, md, mz = P.SUPERMINI
 mini_p = dummy("mini", P.cube(X(mx), Y(my), F + mz, X(mx + mw), Y(my + md), F + mz + 1.6)
                + P.cube(X(mx + 5), Y(my + md - 7), F + mz + 1.6, X(mx + 13), Y(my + md + 1), F + mz + 4.8))
