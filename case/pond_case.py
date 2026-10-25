@@ -45,7 +45,11 @@ PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
-SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 8.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
+SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
+# The sensor board screws down onto 4 standoffs (its parts side faces the back plate, so 7 mm clears its button and
+# chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
+SB_HOLE_INSET = 3.0
+SB_POST_D, SB_PILOT_D = 5.5, 2.2   # M2.5 x 6 screws thread straight into the 2.2 mm pilot (same as BLIPR's sensor boards)
 SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
@@ -171,8 +175,13 @@ def box():
             adds.append(cyl(PAD_TOP - FLOOR + 0.2, PAD_D / 2, X(px), Y(py), FLOOR - 0.2))
             cuts.append(cyl(PAD_TOP - FLOOR + 1, PAD_HOLE_D / 2, X(px), Y(py), FLOOR))
     # board cradles
-    for b in (SENSOR_BOARD, SUPERMINI):
-        adds.append(cradle(*b))
+    adds.append(cradle(*SUPERMINI))
+    # sensor board standoffs
+    sx, sy, sw, sd, sz = SENSOR_BOARD
+    sb_holes = [(sx + ix, sy + iy) for ix in (SB_HOLE_INSET, sw - SB_HOLE_INSET) for iy in (SB_HOLE_INSET, sd - SB_HOLE_INSET)]
+    for hx, hy in sb_holes:
+        adds.append(cyl(sz + 0.2, SB_POST_D / 2, X(hx), Y(hy), FLOOR - 0.2))
+        cuts.append(cyl(sz, SB_PILOT_D / 2, X(hx), Y(hy), FLOOR + 1.0, 32))
     m = union(adds)
     # bottom-end openings: glands and a breather (no charge port or button holes)
     for gx in GLANDS_X:

@@ -25,6 +25,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | 3" PVC pipe, about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
 | 1/2" PVC drop rod from the pergola beam | about 7 ft; measure in place |
 | 3 x PG7 cable glands | on hand |
+| 4 x M2.5 x 6 screws (sensor board) | |
 | 4 x M3 heat-set inserts + 4 x M3 screws with rubber washers (lid), 3 more inserts + M3 screws (pipe cap top), 2 x M4 screws/nuts | |
 
 ## Wiring
@@ -60,7 +61,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 
 | File | What | Print |
 |---|---|---|
-| `box.stl` | electronics box, stands upright on the pergola post (about 3" x 5.75" x 1.75"): BLIPR's battery-holder mount, cradles for the sensor board and SuperMini, 3 glands in the bottom end. No charge-port or button holes: charge through the holder's USB-C with the lid off, or take the cell out | as is, back plate down. PETG or ASA |
+| `box.stl` | electronics box, stands upright on the pergola post (about 3" x 5.75" x 1.75"): BLIPR's battery-holder mount, 4 screw standoffs for the sensor board, a cradle for the SuperMini, 3 glands in the bottom end. No charge-port or button holes: charge through the holder's USB-C with the lid off, or take the cell out | as is, back plate down. PETG or ASA |
 | `box_lid.stl` | lid with a drip edge, two stiffening ribs underneath, washer seats round the 4 corner screws, and "DIP" cut 0.6 mm into the front in BLIPR's lettering (18 mm tall) | as is (already flipped) |
 | `gasket.stl` | TPU ring for the rim groove: 1.6 wide x 1.9 tall, stands 0.5 mm proud so the lid squeezes it about 25 % | 95A TPU, flat, 100 % infill |
 | `pipe_cap.stl` | slides over the 3" pipe, holds both probes, cable chamber above, holes for the float and temperature-probe cables | as is |
@@ -73,5 +74,6 @@ Gasket: print `gasket.stl` in TPU, or lay 1.5 mm foam cord in the rim groove.
 ### Draft v0.1: check before printing
 - **Probe hole** is a guess (18.6 mm, `PROBE_D`): measure the probes when they arrive.
 - **Rod** assumes 1/2" schedule 40 PVC (21.3 mm OD, `ROD_OD`); 1/2" EMT is 17.9.
-- **Sensor board and SuperMini** sit in edge cradles, so their hole positions don't matter.
+- **Sensor board** screws onto 4 standoffs (M2.5 x 6 into 2.2 mm pilots), holes assumed 3 mm in from each corner
+  (`SB_HOLE_INSET`): measure yours. The SuperMini sits in an edge cradle.
 - The holder's USB-C port faces into the box with room beside it for a plug, so it charges with the lid off.
