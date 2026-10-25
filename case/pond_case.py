@@ -64,6 +64,12 @@ COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL),
 GROOVE_W, GROOVE_D = 1.8, 1.4
 GASKET_W, GASKET_H = 1.6, 1.9
 LID_T, LID_LIP, LID_OVER = 3.0, 4.0, 1.6           # lid thickness, drip lip height, overhang past the walls
+# "DIP" cut into the lid's front face in BLIPR's lettering (same rounded block letters as BLIPR's lid, scaled up:
+# BLIPR's are 12 mm tall with a 2.4 mm stroke; the stroke scales with the height so the letters keep their shape)
+NAME_TEXT = "DIP"
+NAME_H, NAME_DEPTH = 18.0, 0.6
+NAME_STROKE = 2.4 * NAME_H / 12.0
+NAME_Y = 0.62                      # letters centred this far up the lid (0 = bottom, 1 = top)
 
 # post-mount ears on the back plate
 EAR_W, EAR_T, EAR_HOLE_D = 16.0, 4.0, 5.2
@@ -179,6 +185,38 @@ def box():
     return m - union(cuts)
 
 
+def name_shape(cx, cy):
+    """NAME_TEXT as a flat outline in BLIPR's rounded block letters, centred on (cx, cy), reading normally
+    from the front of the box (X to the right, Y up)."""
+    H, sw = NAME_H, NAME_STROKE
+    k = H / 12.0                      # BLIPR's letter shapes were drawn 12 mm tall
+    r = 3.0 * k
+
+    def box2(u0, v0, u1, v1):
+        return mf.CrossSection.square([u1 - u0, v1 - v0]).translate([u0, v0])
+
+    def ring(u0, v0, u1, v1):
+        w, h = u1 - u0, v1 - v0
+        return (rrect(w, h, r).translate([u0, v0])
+                - rrect(w - 2 * sw, h - 2 * sw, max(r - sw, 0.4)).translate([u0 + sw, v0 + sw]))
+
+    stem = box2(0, 0, sw, H)
+    glyphs = {                        # (width, outline) per letter, same proportions as BLIPR's B, L, I, P, R
+        "D": (8.4 * k, stem + ring(0, 0, 8.4 * k, H)),
+        "I": (sw, stem),
+        "P": (8.0 * k, stem + ring(0, H * 0.42 - sw / 2, 8.0 * k, H)),
+    }
+    gap = 2.6 * k
+    chosen = [glyphs[ch] for ch in NAME_TEXT]
+    total = sum(w for w, _ in chosen) + gap * (len(chosen) - 1)
+    out, u = None, cx - total / 2
+    for w, shape in chosen:
+        g = shape.translate([u, cy - H / 2])
+        out = g if out is None else out + g
+        u += w + gap
+    return out
+
+
 def box_lid():
     """Printed top-face down. Built here in box coordinates, then flipped onto the bed."""
     H = FLOOR + IH
@@ -192,6 +230,8 @@ def box_lid():
         hx, hy = col_hole(cx, cy)
         m = m - cyl(LID_T + 2, SCREW_CLEAR / 2, hx, hy, H - 1)
         m = m - cyl(1.2, 3.6, hx, hy, H + LID_T - 1.2)          # seat for a rubber/nylon sealing washer
+    # DIP lettering cut into the front face (on the print bed, so the letters come out crisp)
+    m = m - name_shape(OW / 2, OD * NAME_Y).extrude(NAME_DEPTH + 1).translate([0, 0, H + LID_T - NAME_DEPTH])
     return m.rotate([180, 0, 0]).translate([0, OD, H + LID_T])
 
 

@@ -35,6 +35,12 @@ views([f"{d}/box.stl", holder_p, sensor_p, mini_p, plug_p], f"{d}/preview_box.pn
       colors=[grey, amber, blue, green, dark], size=(12, 6.4))
 views([f"{d}/box_lid.stl", f"{d}/gasket.stl"], f"{d}/preview_lid.png",
       [(-45, -60, "Lid (top), washer seats round the screws"), (40, -60, "Lid underside as printed (drip lip) + TPU gasket")], colors=[grey, (0.2, 0.2, 0.22)], offsets=[None, (100, 0, 0)], size=(12, 4.8))
+# the box closed up as it hangs on the post (lid turned back over), to show the lettering
+H_TOP = P.FLOOR + P.IH + P.LID_T
+lid_on = P.box_lid().translate([0, -P.OD, -H_TOP]).rotate([180, 0, 0])
+P.write_stl(lid_on, f"{d}/_dummy_lid_on.stl")
+views([f"{d}/box.stl", f"{d}/_dummy_lid_on.stl"], f"{d}/preview_front.png",
+      [(62, -18, "On the post, lid on (DIP in BLIPR's lettering)")], colors=[grey, (0.80, 0.82, 0.86)], size=(6.5, 6.4))
 off = [None, (0, 0, 70), (120, 0, 0)]
 views([f"{d}/pipe_cap.stl", f"{d}/pipe_cap_top.stl", f"{d}/float_bracket.stl"], f"{d}/preview_pipe.png",
       [(25, -50, "Pipe cap, cap top + rod socket, float bracket"), (-55, -50, "Underneath: the two probe holes")],
