@@ -19,7 +19,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | 18650 battery holder (USB-C + micro-USB, same as BLIPR) + 18650 cell | on hand. Set its slide switch SW1 to **stay on** (not auto-shutdown) |
 | JSN-SR20-Y1 ultrasonic sensor (dual probes, 48 x 23 mm board) | ordered |
 | Mini vertical float switch (PP, M10 stem) | 16" leads: spliced onto the 4-core cable inside the pipe cap's chamber |
-| DS18B20 waterproof temperature probe (1 m) | to buy. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
+| DS18B20 waterproof temperature probe (1 m) | ordered. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
 | 4-core outdoor cable, box to pipe cap | carries 3V3, GND, float, probe data through one gland. Splices: solder + adhesive-lined heat shrink |
 | Resistors | 360 kOhm (sensor low-power mode, soldered on the sensor board's MODE pad), 3 x 100 kOhm (battery reading divider + float pull-up), 4.7 kOhm (temperature probe pull-up) |
 | 3" PVC pipe, about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
