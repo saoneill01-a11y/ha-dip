@@ -45,12 +45,17 @@ PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
-SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
+SENSOR_BOARD = (41.0, 12.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
 # The sensor board screws down onto 4 standoffs (its parts side faces the back plate, so 7 mm clears its button and
 # chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
 SB_HOLE_INSET = 3.0
 SB_POST_D, SB_PILOT_D = 5.5, 2.2   # M2.5 x 6 screws thread straight into the 2.2 mm pilot (same as BLIPR's sensor boards)
 SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
+# The SuperMini has no screw holes: its USB end slides under two corner lips (either side of the USB-C socket),
+# then a printed tab (esp_clamp.stl) screws down over its other end with one M2.5 x 6 into a post.
+# The board rests on its two short ends only, so wires soldered into the pin holes along its long edges are clear.
+SM_CLR, SM_HOOK_IN, SM_LIP_T, SM_REST = 0.4, 3.5, 1.4, 1.5
+SM_POST_R, SM_PILOT_D, SM_TAB_T, SM_TAB_W, SM_TAB_OVER = 3.4, 2.2, 2.0, 12.0, 1.8
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
 # cable glands (PG7: 12.5 mm hole) in the bottom end, centred on the wall height
@@ -155,6 +160,43 @@ def cradle(x, y, w, d, ledge_z):
     return m
 
 
+def supermini_mount():
+    """Two corner hooks at the USB end + a screw post at the other end (see SM_* above)."""
+    x, y, w, d, lz = SUPERMINI
+    c, wall = SM_CLR, 1.8
+    bx0, bx1, by0, by1 = X(x), X(x + w), Y(y), Y(y + d)        # board outline
+    zb, zt = FLOOR + lz, FLOOR + lz + 1.6                       # board underside / top
+    adds, cuts = [], []
+    for side in (0, 1):                                         # USB-end corner hooks
+        if side == 0:
+            hx0, hx1 = bx0 - c - wall, bx0 + SM_HOOK_IN
+        else:
+            hx0, hx1 = bx1 - SM_HOOK_IN, bx1 + c + wall
+        adds.append(cube(hx0, by1 - 4.0, FLOOR - 0.2, hx1, by1 + c + wall, zt + 0.3 + SM_LIP_T))
+    # the slot the board slides into, then clear everything under the board except a 1.5 mm rest at its end
+    cuts.append(cube(bx0 - c, by1 - 6.0, zb, bx1 + c, by1 + c, zt + 0.3))
+    cuts.append(cube(bx0 + SM_HOOK_IN, by1 - 6.0, FLOOR, bx1 - SM_HOOK_IN, by1 + c + wall + 1, zt + 2 + SM_LIP_T))
+    cuts.append(cube(bx0 - c - wall - 1, by1 - 6.0, FLOOR, bx1 + c + wall + 1, by1 - SM_REST, zb))
+    cuts.append(cube(bx0 - c - wall - 1, by1 - 6.0, zt + 0.3, bx1 + c + wall + 1, by1 - SM_HOOK_IN + 1.5, zt + 3))
+    # far end: a rest under the board's end + the screw post just beyond it
+    cx = (bx0 + bx1) / 2
+    py = by0 - c - SM_POST_R
+    adds.append(cube(cx - 5.0, by0 - c - 0.5, FLOOR - 0.2, cx + 5.0, by0 + SM_REST, zb))
+    adds.append(cyl(zt - FLOOR + 0.2, SM_POST_R, cx, py, FLOOR - 0.2))
+    cuts.append(cyl(zt - FLOOR, SM_PILOT_D / 2, cx, py, FLOOR + 1.0, 32))
+    return adds, cuts
+
+
+def esp_clamp():
+    """The tab that holds the SuperMini's far end down: one M2.5 x 6 through it into the post. Print flat."""
+    c = SM_CLR
+    py_to_edge = c + SM_POST_R                                  # post centre to the board's end
+    L = SM_POST_R + 1.5 + py_to_edge + SM_TAB_OVER
+    tab = rrect(SM_TAB_W, L, 2.0).extrude(SM_TAB_T)
+    hole = cyl(SM_TAB_T + 2, 2.9 / 2, SM_TAB_W / 2, SM_POST_R + 1.5, -1, 32)
+    return tab - hole
+
+
 def box():
     H = FLOOR + IH
     shell = rbox(0, 0, 0, OW, OD, H, R_OUT) - rbox(WALL, WALL, FLOOR, IW, ID, IH + 1, R_OUT - WALL)
@@ -175,7 +217,9 @@ def box():
             adds.append(cyl(PAD_TOP - FLOOR + 0.2, PAD_D / 2, X(px), Y(py), FLOOR - 0.2))
             cuts.append(cyl(PAD_TOP - FLOOR + 1, PAD_HOLE_D / 2, X(px), Y(py), FLOOR))
     # board cradles
-    adds.append(cradle(*SUPERMINI))
+    sm_adds, sm_cuts = supermini_mount()
+    adds += sm_adds
+    cuts += sm_cuts
     # sensor board standoffs
     sx, sy, sw, sd, sz = SENSOR_BOARD
     sb_holes = [(sx + ix, sy + iy) for ix in (SB_HOLE_INSET, sw - SB_HOLE_INSET) for iy in (SB_HOLE_INSET, sd - SB_HOLE_INSET)]
@@ -338,7 +382,7 @@ def write_stl(m, path):
     return len(f)
 
 
-PARTS = {"box": box, "box_lid": box_lid, "gasket": gasket, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket}
+PARTS = {"box": box, "box_lid": box_lid, "gasket": gasket, "esp_clamp": esp_clamp, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket}
 
 if __name__ == "__main__":
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")

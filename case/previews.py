@@ -37,9 +37,17 @@ plugs = plugs + P.cube(hx - 1.3, Y(sy + sd / 2) - 5.2, bz, hx + 1.3, Y(sy + sd /
 sensor_p = dummy("sensor", P.cube(X(sx), Y(sy), F + sz, X(sx + sw), Y(sy + sd), F + sz + 1.6) + plugs)
 mx, my, mw, md, mz = P.SUPERMINI
 mini_p = dummy("mini", P.cube(X(mx), Y(my), F + mz, X(mx + mw), Y(my + md), F + mz + 1.6)
-               + P.cube(X(mx + 5), Y(my + md - 7), F + mz + 1.6, X(mx + 13), Y(my + md + 1), F + mz + 4.8))
+               + P.cube(X(mx + 4.6), Y(my + md - 7), F + mz + 1.6, X(mx + 13.4), Y(my + md + 0.8), F + mz + 4.8))
+# the clamp tab in place over the board's far end
+tab_y0 = Y(my) - P.SM_CLR - P.SM_POST_R - P.SM_POST_R - 1.5
+clamp_p = None
 
+_c = P.esp_clamp().translate([X(mx + mw / 2) - P.SM_TAB_W / 2, tab_y0, F + mz + 1.6])
+clamp_p = dummy("clamp", _c)
 grey, blue, green, amber, dark = (0.70, 0.73, 0.78), (0.30, 0.50, 0.85), (0.35, 0.65, 0.40), (0.85, 0.62, 0.25), (0.25, 0.25, 0.28)
+views([f"{d}/box.stl", mini_p, clamp_p], f"{d}/preview_esp_mount.png",
+      [(55, -25, "ESP32 SuperMini: USB end under 2 lips, tab + 1 screw at the other end")],
+      colors=[(0.70, 0.73, 0.78), (0.35, 0.65, 0.40), (0.85, 0.62, 0.25)], size=(7, 6.4), )
 views([f"{d}/box.stl", holder_p, sensor_p, mini_p, plug_p], f"{d}/preview_box.png",
       [(60, -30, "Box upright, lid off (USB-C cable plugged in)"), (-20, -35, "Bottom end: 3 cable glands")],
       colors=[grey, amber, blue, green, dark], size=(12, 6.4))
