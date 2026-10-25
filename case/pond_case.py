@@ -34,12 +34,12 @@ OW, OD = IW + 2 * WALL, ID + 2 * WALL
 x0, y0 = WALL, WALL                # inside origin
 
 # battery holder: the same 4-pad mount as BLIPR's base (Sean's CAD): 25.0 x 94.7 mm hole pattern,
-# 10 mm round pads, top 7.4 mm above the outside of the floor, 2.8 mm screw holes.
+# round pads (8 mm here, 10 on BLIPR), top 7.4 mm above the outside of the floor, 2.8 mm screw holes.
 # It stands up the left side. Its USB-C port faces IN (to the right) so a cable plugs in with the lid off;
 # the cell lifts straight out of the holder too. No holes in the walls for the port or the button.
 HOLD_COLS_X = (4.5, 29.5)          # pad columns (4.5 mm from the left wall, as BLIPR's 4.5 mm wall gap)
 HOLD_ROWS_Y = (30.0, 124.7)        # pad rows; the port end of the holder is at the top
-PAD_D, PAD_TOP, PAD_HOLE_D = 10.0, 7.4, 2.8
+PAD_D, PAD_TOP, PAD_HOLE_D = 8.0, 7.4, 2.8   # 8 mm (BLIPR has 10): 10 mm pads hit parts under the holder
 PORT_FROM_TOP_HOLE = 21.45         # USB-C port centre below the top pad row (measured from BLIPR's base)
 PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
