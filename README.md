@@ -22,7 +22,8 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | Resistors | 360 kOhm (sensor low-power mode), 2 x 100 kOhm (battery voltage reading) |
 | 3" PVC pipe, about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
 | 1/2" PVC drop rod from the pergola beam | about 7 ft; measure in place |
-| 3 x PG7 cable glands, M3 heat-set inserts, M3 screws + rubber washers, 2 x M4 screws/nuts | |
+| 3 x PG7 cable glands | on hand |
+| M3 heat-set inserts, M3 screws + rubber washers, 2 x M4 screws/nuts | |
 
 ## Printed parts (`case/`)
 
