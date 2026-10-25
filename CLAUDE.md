@@ -8,5 +8,6 @@ before anything gets printed or built, and ask before anything that costs money 
 - The battery-holder mount copies BLIPR's base (saoneill01-a11y/rangebook-blipr,
   `case/user_edits/base_from_sean_2026-10-22.stl`). The box has no charge-port or button holes: the holder's
   USB-C faces into the box and Sean charges it with the lid off (keep the plug clearance, `PLUG_ZONE`).
-- Firmware will be ESPHome (deep sleep, 20 min wake, float switch as a wake pin), added later.
+- Firmware: `firmware/pond-sensor.yaml` (ESPHome; validate with `esphome config`, test with `esphome compile`). HA side: `ha/pond_package.yaml`.
+- Pins: GPIO3 float (wake pin, 100k pull-up), GPIO4 battery divider, GPIO6 Trig, GPIO7 Echo. Wiring picture: `docs/wiring.svg` (render to PNG with cairosvg).
 - Commit as Sean; push to `main` after each piece of work.

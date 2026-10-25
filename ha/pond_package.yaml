@@ -1,0 +1,144 @@
+# Pond sensor: the Home Assistant side.
+#
+# Install: put this file in config/packages/ and make sure configuration.yaml has
+#   homeassistant:
+#     packages: !include_dir_named packages
+# then restart Home Assistant. (Claude Code can do this for you.)
+#
+# CHECK THESE ENTITY IDs against your system before using:
+#   switch.pond_pumps          the Tuya "Pond Pumps" outdoor plug
+#   notify.mobile_app_max17    Sean's phone
+#   sensor.pond_sensor_*       / binary_sensor.pond_sensor_*  created by the ESPHome device "Pond sensor"
+#
+# After the sensor is in place: with the pond full (water at the overflow), copy the "Distance to water"
+# reading into "Pond full distance". Everything else is measured from that.
+
+input_boolean:
+  pond_sensor_stay_awake:
+    name: Pond sensor stay awake
+    icon: mdi:sleep-off
+  pond_pumps_stopped_for_low_water:
+    name: Pond pumps stopped for low water
+    icon: mdi:pump-off
+
+input_number:
+  pond_full_distance:
+    name: Pond full distance
+    unit_of_measurement: cm
+    min: 2
+    max: 100
+    step: 0.5
+    mode: box
+    icon: mdi:waves-arrow-up
+  pond_low_alert_drop:
+    name: Pond low-water alert level
+    unit_of_measurement: in
+    min: 1
+    max: 12
+    step: 0.5
+    initial: 4
+    mode: box
+    icon: mdi:waves-arrow-down
+
+template:
+  - sensor:
+      - name: Pond level below full
+        unique_id: pond_level_below_full
+        unit_of_measurement: in
+        icon: mdi:waves
+        state: >
+          {% set d = states('sensor.pond_sensor_distance_to_water') | float(none) %}
+          {% set full = states('input_number.pond_full_distance') | float(none) %}
+          {{ ((d - full) / 2.54) | round(1) }}
+        availability: >
+          {{ is_number(states('sensor.pond_sensor_distance_to_water'))
+             and is_number(states('input_number.pond_full_distance')) }}
+  - binary_sensor:
+      - name: Pond water low
+        unique_id: pond_water_low
+        device_class: problem
+        icon: mdi:waves-arrow-down
+        state: >
+          {{ is_state('binary_sensor.pond_sensor_float_switch_low', 'on')
+             or states('sensor.pond_level_below_full') | float(0) >= states('input_number.pond_low_alert_drop') | float(99) }}
+
+automation:
+  - id: pond_low_water_stop_pumps
+    alias: "Pond: low water - stop pumps and alert"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.pond_water_low
+        to: "on"
+    actions:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.pond_pumps
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.pond_pumps_stopped_for_low_water
+      - action: notify.mobile_app_max17
+        data:
+          title: "Pond water is LOW"
+          message: >
+            Level is {{ states('sensor.pond_level_below_full') }} in below full
+            (float switch {{ 'tripped' if is_state('binary_sensor.pond_sensor_float_switch_low', 'on') else 'OK' }}).
+            Pond pumps turned off.
+          data:
+            push:
+              interruption-level: critical   # comes through even on silent / Do Not Disturb
+              sound:
+                name: default
+                critical: 1
+                volume: 1.0
+
+  - id: pond_recovered_restart_pumps
+    alias: "Pond: water back up - restart pumps"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.pond_water_low
+        to: "off"
+        for: "00:10:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.pond_pumps_stopped_for_low_water
+        state: "on"
+    actions:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.pond_pumps
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pond_pumps_stopped_for_low_water
+      - action: notify.mobile_app_max17
+        data:
+          title: "Pond back to normal"
+          message: "Level is {{ states('sensor.pond_level_below_full') }} in below full. Pumps are back on."
+
+  - id: pond_sensor_silent
+    alias: "Pond: sensor stopped reporting"
+    mode: single
+    triggers:
+      - trigger: template
+        value_template: >
+          {% set s = states.sensor.pond_sensor_distance_to_water %}
+          {{ s is not none and now() - s.last_reported > timedelta(minutes=50) }}
+    actions:
+      - action: notify.mobile_app_max17
+        data:
+          title: "Pond sensor is quiet"
+          message: "No reading for 50 minutes. Battery flat or Wi-Fi trouble?"
+
+  - id: pond_sensor_battery_low
+    alias: "Pond: sensor battery low"
+    mode: single
+    triggers:
+      - trigger: numeric_state
+        entity_id: sensor.pond_sensor_battery
+        below: 20
+    actions:
+      - action: notify.mobile_app_max17
+        data:
+          title: "Pond sensor battery at {{ states('sensor.pond_sensor_battery') }}%"
+          message: "Time to charge it (lid off, USB-C into the holder) or swap the cell."

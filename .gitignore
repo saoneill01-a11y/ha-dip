@@ -1,2 +1,4 @@
 __pycache__/
 case/out/_dummy_*.stl
+firmware/secrets.yaml
+firmware/.esphome/
