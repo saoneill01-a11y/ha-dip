@@ -31,7 +31,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 
 | File | What | Print |
 |---|---|---|
-| `box.stl` | electronics box for the pergola post: BLIPR's battery-holder mount, cradles for the sensor board and SuperMini, charge port + button + glands in the bottom wall | as is, back plate down. PETG or ASA |
+| `box.stl` | electronics box, stands upright on the pergola post (about 3" x 5.75" x 1.5"): BLIPR's battery-holder mount, cradles for the sensor board and SuperMini, 3 glands in the bottom end. No charge-port or button holes: charge through the holder's USB-C with the lid off, or take the cell out | as is, back plate down. PETG or ASA |
 | `box_lid.stl` | lid with gasket tongue and drip edge | as is (already flipped) |
 | `pipe_cap.stl` | slides over the 3" pipe, holds both probes, cable chamber above | as is |
 | `pipe_cap_top.stl` | closes the chamber, socket for the 1/2" rod (M4 set screw) | as is |
@@ -43,4 +43,4 @@ Gasket: print a 1.8 mm wide ring in TPU, or lay 1.5 mm foam cord in the rim groo
 - **Probe hole** is a guess (18.6 mm, `PROBE_D`): measure the probes when they arrive.
 - **Rod** assumes 1/2" schedule 40 PVC (21.3 mm OD, `ROD_OD`); 1/2" EMT is 17.9.
 - **Sensor board and SuperMini** sit in edge cradles, so their hole positions don't matter.
-- The charge-port and button openings copy BLIPR's base (same holder).
+- The holder's USB-C port faces into the box with room beside it for a plug, so it charges with the lid off.

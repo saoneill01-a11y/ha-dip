@@ -1,5 +1,6 @@
 """
-Pond water-level sensor - 3D-printed parts (draft v0.1).
+Pond water-level sensor - 3D-printed parts (draft v0.2: box stands upright, glands in the short bottom end,
+no charge-port or button holes; charge with the lid off or take the cell out).
 
 Run:  python3 pond_case.py        (needs: pip install manifold3d numpy)
 Writes STL files to out/:
@@ -11,9 +12,9 @@ Writes STL files to out/:
 
 All sizes in mm. Change a number below and re-run.
 
-Box coordinates (as it hangs on the post):
-  X = left -> right along the post face
-  Y = up from the BOTTOM wall (the bottom wall faces the ground: cable glands, charge port, power button)
+Box coordinates (as it hangs upright on the post):
+  X = left -> right across the post face
+  Y = up from the BOTTOM wall (the short end that faces the ground: the three cable glands)
   Z = out from the post (the floor of the box is against the post; the lid faces you)
 """
 import os
@@ -25,36 +26,38 @@ SEG = 64
 # ------------------------------------------------------------------ box
 WALL = 3.2          # thicker than BLIPR so the rim can carry a gasket groove
 FLOOR = 2.4         # back plate (against the post); same as BLIPR so the holder pads are the same height
-IW, ID, IH = 186.0, 68.0, 34.0   # inside width (X), depth (Y, bottom -> top), height (Z)
+IW, ID, IH = 72.0, 140.0, 34.0   # inside width (X), height up the post (Y), depth out from the post (Z)
 R_OUT = 6.0
 OW, OD = IW + 2 * WALL, ID + 2 * WALL
 x0, y0 = WALL, WALL                # inside origin
 
 # battery holder: the same 4-pad mount as BLIPR's base (Sean's CAD): 25.0 x 94.7 mm hole pattern,
 # 10 mm round pads, top 7.4 mm above the outside of the floor, 2.8 mm screw holes.
-# The holder's charge port and power button face the bottom wall (down = rain can't fall in).
-HOLD_X0 = 16.0                     # first pad hole, X (inside coords)
-HOLD_PITCH_X, HOLD_PITCH_Y = 94.7, 25.0
-HOLD_Y0 = 4.5                      # pad row nearest the bottom wall (same 4.5 mm as BLIPR's wall gap)
+# It stands up the left side. Its USB-C port faces IN (to the right) so a cable plugs in with the lid off;
+# the cell lifts straight out of the holder too. No holes in the walls for the port or the button.
+HOLD_COLS_X = (4.5, 29.5)          # pad columns (4.5 mm from the left wall, as BLIPR's 4.5 mm wall gap)
+HOLD_ROWS_Y = (30.0, 124.7)        # pad rows; the port end of the holder is at the top
 PAD_D, PAD_TOP, PAD_HOLE_D = 10.0, 7.4, 2.8
-# openings for the holder, measured from BLIPR's base (relative to the first pad hole)
-PORT_DX, PORT_W, PORT_Z0, PORT_Z1 = 21.45, 14.5, 2.4, 10.9      # charge port
-BTN_DX, BTN_W, BTN_H, BTN_Z = 85.95, 14.0, 10.0, 11.9           # holder power button slot
+PORT_FROM_TOP_HOLE = 21.45         # USB-C port centre below the top pad row (measured from BLIPR's base)
+PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
+PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
-SENSOR_BOARD = (20.0, 40.0, 48.0, 23.0, 8.0)     # JSN-SR20-Y1 driver board, 48 x 23
-SUPERMINI = (82.0, 42.0, 22.5, 18.0, 6.0)        # ESP32-C3 SuperMini, 22.5 x 18 (USB-C toward +X)
+SENSOR_BOARD = (41.0, 18.0, 23.0, 48.0, 8.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up
+SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
-# cable glands (PG7: 12.5 mm hole) in the bottom wall, centred on the wall height
-GLANDS_X = (135.0, 152.0, 169.0)
-GLAND_D, GLAND_Z = 12.6, 17.0
-VENT_D, VENT_X, VENT_Z = 2.0, 125.0, 28.0         # tiny breather in the bottom wall
+# cable glands (PG7: 12.5 mm hole) in the bottom end, centred on the wall height
+GLANDS_X = (IW / 2 - 17.0, IW / 2, IW / 2 + 17.0)
+GLAND_D, GLAND_Z = 12.6, FLOOR + IH / 2
+VENT_D, VENT_X, VENT_Z = 2.0, 10.5, FLOOR + IH - 7.0   # tiny breather in the bottom end
 
-# lid screws: M3 heat-set inserts (same as BLIPR) in corner columns + 2 on the top wall
+# lid screws: M3 heat-set inserts (same as BLIPR) in 8 mm columns, given by their inside-corner (x, y)
 COL = 8.0
 INSERT_D, INSERT_DEPTH, SCREW_CLEAR = 4.1, 7.5, 3.4
-MID_COLS_X = (IW / 3, 2 * IW / 3)
+COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL),
+        (IW / 2 - COL / 2, ID - COL),          # top end, middle
+        (IW - COL, PORT_Y + 16.0)]             # right side, above the plug zone
 
 # gasket: groove in the box rim, tongue under the lid (print the gasket in TPU, or lay 1.5 mm foam cord)
 GROOVE_W, GROOVE_D = 1.8, 1.4
@@ -113,6 +116,13 @@ def X(v): return x0 + v
 def Y(v): return y0 + v
 
 
+def col_hole(cx, cy):
+    """Insert hole centre for a column: its middle, nudged 0.8 mm toward any wall it touches."""
+    hx = cx + COL / 2 + (-0.8 if cx == 0 else 0.8 if cx == IW - COL else 0)
+    hy = cy + COL / 2 + (-0.8 if cy == 0 else 0.8 if cy == ID - COL else 0)
+    return X(hx), Y(hy)
+
+
 def cradle(x, y, w, d, ledge_z):
     """Four corner brackets: the board drops in, rests on a ledge and is held at its edges."""
     cw, cl = CRADLE_WALL, CRADLE_CLR
@@ -134,35 +144,26 @@ def box():
     H = FLOOR + IH
     shell = rbox(0, 0, 0, OW, OD, H, R_OUT) - rbox(WALL, WALL, FLOOR, IW, ID, IH + 1, R_OUT - WALL)
     adds, cuts = [shell], []
-    # ears for the post (left and right ends of the back plate)
-    for ex in (-EAR_W, OW):
-        ax = ex if ex < 0 else OW - R_OUT                     # each ear reaches R_OUT into the box's back plate
-        adds.append(rbox(ax, 6.0, 0, EAR_W + R_OUT, OD - 12.0, EAR_T, 4.0))
-        for ey in (OD * 0.25, OD * 0.75):
-            cuts.append(cyl(EAR_T + 2, EAR_HOLE_D / 2, ex + EAR_W / 2, ey, -1))
+    # ears for the post (top and bottom ends of the back plate), two screw holes each
+    for ey in (-EAR_W, OD):
+        ay = ey if ey < 0 else OD - R_OUT                     # each ear reaches R_OUT into the box's back plate
+        adds.append(rbox(6.0, ay, 0, OW - 12.0, EAR_W + R_OUT, EAR_T, 4.0))
+        for ex in (OW * 0.28, OW * 0.72):
+            cuts.append(cyl(EAR_T + 2, EAR_HOLE_D / 2, ex, ey + EAR_W / 2, -1))
     # lid screw columns
-    cols = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL)] + [(mx - COL / 2, ID - COL) for mx in MID_COLS_X]
-    for cx, cy in cols:
+    for cx, cy in COLS:
         adds.append(cube(X(cx), Y(cy), FLOOR - 0.2, X(cx + COL), Y(cy + COL), H))
-        hx = X(cx + COL / 2 + (-0.8 if cx == 0 else 0.8 if cx == IW - COL else 0))
-        hy = Y(cy + COL / 2 + (-0.8 if cy == 0 else 0.8))
-        cuts.append(cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, hx, hy, H - INSERT_DEPTH))
+        cuts.append(cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, *col_hole(cx, cy), H - INSERT_DEPTH))
     # battery-holder pads
-    for i in range(2):
-        for j in range(2):
-            px, py = X(HOLD_X0 + i * HOLD_PITCH_X), Y(HOLD_Y0 + j * HOLD_PITCH_Y)
-            adds.append(cyl(PAD_TOP - FLOOR + 0.2, PAD_D / 2, px, py, FLOOR - 0.2))
-            cuts.append(cyl(PAD_TOP - FLOOR + 1, PAD_HOLE_D / 2, px, py, FLOOR))
+    for px in HOLD_COLS_X:
+        for py in HOLD_ROWS_Y:
+            adds.append(cyl(PAD_TOP - FLOOR + 0.2, PAD_D / 2, X(px), Y(py), FLOOR - 0.2))
+            cuts.append(cyl(PAD_TOP - FLOOR + 1, PAD_HOLE_D / 2, X(px), Y(py), FLOOR))
     # board cradles
     for b in (SENSOR_BOARD, SUPERMINI):
         adds.append(cradle(*b))
     m = union(adds)
-    # bottom-wall openings: charge port, power-button slot, glands, vent
-    px = X(HOLD_X0 + PORT_DX)
-    cuts.append(cube(px - PORT_W / 2, -1, PORT_Z0, px + PORT_W / 2, WALL + 1, PORT_Z1))
-    bx = X(HOLD_X0 + BTN_DX)
-    slot = rrect(BTN_W, BTN_H, BTN_H / 2).extrude(WALL + 2).rotate([-90, 0, 0])
-    cuts.append(slot.translate([bx - BTN_W / 2, -1, BTN_Z + BTN_H / 2]))
+    # bottom-end openings: glands and a breather (no charge port or button holes)
     for gx in GLANDS_X:
         cuts.append(cyl(WALL + 2, GLAND_D / 2, 0, 0, 0).rotate([-90, 0, 0]).translate([X(gx), -1, GLAND_Z]))
     cuts.append(cyl(WALL + 2, VENT_D / 2, 0, 0, 0, 24).rotate([-90, 0, 0]).translate([X(VENT_X), -1, VENT_Z]))
@@ -190,10 +191,8 @@ def box_lid():
             .translate([mid + TONGUE_W / 2, mid + TONGUE_W / 2]))
     tongue = (t_out - t_in).extrude(TONGUE_H + 0.1).translate([0, 0, H - TONGUE_H])
     m = plate + lip + tongue
-    cols = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL)] + [(mx - COL / 2, ID - COL) for mx in MID_COLS_X]
-    for cx, cy in cols:
-        hx = X(cx + COL / 2 + (-0.8 if cx == 0 else 0.8 if cx == IW - COL else 0))
-        hy = Y(cy + COL / 2 + (-0.8 if cy == 0 else 0.8))
+    for cx, cy in COLS:
+        hx, hy = col_hole(cx, cy)
         m = m - cyl(LID_T + 2, SCREW_CLEAR / 2, hx, hy, H - 1)
         m = m - cyl(1.2, 3.6, hx, hy, H + LID_T - 1.2)          # seat for a rubber/nylon sealing washer
     return m.rotate([180, 0, 0]).translate([0, OD, H + LID_T])
