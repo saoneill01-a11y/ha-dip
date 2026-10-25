@@ -1,5 +1,5 @@
 """
-Pond water-level sensor - 3D-printed parts (draft v0.2: box stands upright, glands in the short bottom end,
+DIP (Depth In Pond) - 3D-printed parts (draft v0.2: box stands upright, glands in the short bottom end,
 no charge-port or button holes; charge with the lid off or take the cell out).
 
 Run:  python3 pond_case.py        (needs: pip install manifold3d numpy)
@@ -278,7 +278,7 @@ def write_stl(m, path):
     data = np.zeros(len(f), dtype=np.dtype([("n", "<3f4"), ("v", "<9f4"), ("a", "<u2")]))
     data["n"], data["v"] = n, tri.reshape(-1, 9)
     with open(path, "wb") as fh:
-        fh.write(b"pond sensor".ljust(80, b" "))
+        fh.write(b"DIP pond sensor".ljust(80, b" "))
         fh.write(np.uint32(len(f)).tobytes())
         fh.write(data.tobytes())
     return len(f)

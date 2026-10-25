@@ -1,4 +1,4 @@
-# Pond sensor
+# DIP (Depth In Pond)
 
 A battery-powered water-level sensor for the pond, reporting to Home Assistant over Wi-Fi.
 
@@ -43,13 +43,13 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 
 ## Firmware (`firmware/`) and Home Assistant (`ha/`)
 
-- `firmware/pond-sensor.yaml`: ESPHome. Wakes every 20 min (every 2 min while the float is low), takes 5 readings,
+- `firmware/dip.yaml`: ESPHome. Wakes every 20 min (every 2 min while the float is low), takes 5 readings,
   sends the middle one plus the water temperature, sleeps. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in.
-  First flash over USB: `esphome run firmware/pond-sensor.yaml` (hold BOOT, tap RESET if the board isn't found).
+  First flash over USB: `esphome run firmware/dip.yaml` (hold BOOT, tap RESET if the board isn't found).
   Test-compiled with ESPHome 2026.10.0.
-- `ha/pond_package.yaml`: Home Assistant package. Pond level in inches below full, "Pond water low", a critical
+- `ha/dip_package.yaml`: Home Assistant package. Pond level in inches below full, "Pond water low", a critical
   phone alert + pumps off when low, pumps back on 10 min after it recovers, alerts if the sensor goes quiet or its
-  battery drops below 20 %, and the "Pond sensor stay awake" switch for wireless updates. Check the entity IDs at
+  battery drops below 20 %, and the "DIP stay awake" switch for wireless updates. Check the entity IDs at
   the top of the file first.
 - Calibrate once: with the pond full, copy "Distance to water" into "Pond full distance" in HA.
 

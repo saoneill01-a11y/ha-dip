@@ -1,11 +1,11 @@
-# Pond water-level sensor: ESP32-C3 SuperMini, JSN-SR20-Y1 ultrasonic, float switch, 18650 battery.
+# DIP (Depth In Pond), the pond water-level sensor: ESP32-C3 SuperMini, JSN-SR20-Y1 ultrasonic, float switch, 18650 battery.
 #
 # What it does:
 #   - Wakes every 20 minutes, takes 5 distance readings, sends the middle one to Home Assistant, sleeps again.
 #   - The float switch wakes it IMMEDIATELY when the water drops (GPIO3). While the float stays low it checks
 #     every 2 minutes, and it also wakes the moment the float comes back up.
 #   - Sends pond water temperature, battery voltage and %, float state and Wi-Fi signal each time.
-#   - Turn on "Pond sensor stay awake" in Home Assistant to keep it awake for updates (it checks on each wake).
+#   - Turn on "DIP stay awake" in Home Assistant to keep it awake for updates (it checks on each wake).
 #
 # Pins (see ../docs/wiring.svg):
 #   GPIO3  float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
@@ -13,12 +13,12 @@
 #   GPIO6  sensor Trig     GPIO7  sensor Echo
 #   GPIO5  DS18B20 water-temperature probe data, 4.7k pull-up to 3V3
 #
-# First flash over USB: plug in, run `esphome run pond-sensor.yaml`. If it isn't found, hold BOOT, tap RESET.
+# First flash over USB: plug in, run `esphome run dip.yaml`. If it isn't found, hold BOOT, tap RESET.
 # Copy secrets.example.yaml to secrets.yaml and fill it in (secrets.yaml stays out of git).
 
 substitutions:
-  name: pond-sensor
-  friendly_name: Pond sensor
+  name: dip
+  friendly_name: DIP
   normal_sleep: 20min
   normal_sleep_ms: "1200000"     # same as normal_sleep, in milliseconds
   low_water_sleep_ms: "120000"   # 2 minutes while the float is low
@@ -186,10 +186,10 @@ binary_sensor:
     filters:
       - delayed_on_off: 500ms   # ignore ripples bouncing the float
 
-  # "Pond sensor stay awake" helper in Home Assistant (created by ../ha/pond_package.yaml)
+  # "DIP stay awake" helper in Home Assistant (created by ../ha/dip_package.yaml)
   - platform: homeassistant
     id: stay_awake
-    entity_id: input_boolean.pond_sensor_stay_awake
+    entity_id: input_boolean.dip_stay_awake
     on_press:
       - deep_sleep.prevent: sleeper
       - script.execute: awake_loop
