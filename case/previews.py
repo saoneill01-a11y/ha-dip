@@ -34,7 +34,7 @@ views([f"{d}/box.stl", holder_p, sensor_p, mini_p, plug_p], f"{d}/preview_box.pn
       [(60, -30, "Box upright, lid off (USB-C cable plugged in)"), (-20, -35, "Bottom end: 3 cable glands")],
       colors=[grey, amber, blue, green, dark], size=(12, 6.4))
 views([f"{d}/box_lid.stl", f"{d}/gasket.stl"], f"{d}/preview_lid.png",
-      [(-45, -60, "Lid (top), washer seats round the screws"), (40, -60, "Lid underside as printed (drip lip) + TPU gasket")], colors=[grey, (0.2, 0.2, 0.22)], offsets=[None, (100, 0, 0)], size=(12, 4.8))
+      [(-45, -60, "Lid (top), washer seats round the 4 screws"), (40, -60, "Lid underside as printed: 2 stiffening ribs, drip lip + TPU gasket")], colors=[grey, (0.2, 0.2, 0.22)], offsets=[None, (100, 0, 0)], size=(12, 4.8))
 # the box closed up as it hangs on the post (lid turned back over), to show the lettering
 H_TOP = P.FLOOR + P.IH + P.LID_T
 lid_on = P.box_lid().translate([0, -P.OD, -H_TOP]).rotate([180, 0, 0])

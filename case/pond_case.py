@@ -52,12 +52,13 @@ GLANDS_X = (IW / 2 - 17.0, IW / 2, IW / 2 + 17.0)
 GLAND_D, GLAND_Z = 12.6, FLOOR + IH / 2
 VENT_D, VENT_X, VENT_Z = 2.0, 10.5, FLOOR + IH - 7.0   # tiny breather in the bottom end
 
-# lid screws: M3 heat-set inserts (same as BLIPR) in 8 mm columns, given by their inside-corner (x, y)
+# lid screws: M3 heat-set inserts (same as BLIPR) in 8 mm corner columns, given by their inside-corner (x, y)
 COL = 8.0
 INSERT_D, INSERT_DEPTH, SCREW_CLEAR = 4.1, 7.5, 3.4
-COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL),
-        (IW / 2 - COL / 2, ID - COL),          # top end, middle
-        (IW - COL, PORT_Y + 16.0)]             # right side, above the plug zone
+COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL)]   # four corners only
+# two ribs under the lid keep it flat between the corner screws, so the gasket is squeezed all the way round
+RIB_W, RIB_H = 1.8, 5.0
+RIBS_X = (IW * 0.30, IW * 0.70)     # run up the box (inside X); clear of the battery (9 mm below) and the plug
 
 # gasket: a printed TPU ring sits in a groove in the box rim and stands 0.5 mm proud; the flat lid squeezes it
 # about 25 % (right for 95A TPU). 1.5 mm foam cord in the groove works too.
@@ -226,6 +227,8 @@ def box_lid():
            - rbox(-0.3, -0.3, H - LID_LIP - 1, OW + 0.6, OD + 0.6, LID_LIP + 2, R_OUT + 0.3))
     mid = WALL / 2
     m = plate + lip                     # flat underside: it presses the gasket down
+    for rx in RIBS_X:                   # stiffening ribs, inside the walls, clear of the gasket
+        m = m + cube(X(rx) - RIB_W / 2, Y(COL + 4), H - RIB_H, X(rx) + RIB_W / 2, Y(ID - COL - 4), H + 0.1)
     for cx, cy in COLS:
         hx, hy = col_hole(cx, cy)
         m = m - cyl(LID_T + 2, SCREW_CLEAR / 2, hx, hy, H - 1)
