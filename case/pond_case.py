@@ -357,10 +357,10 @@ def pipe_cap():
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # three screw bosses inside the chamber for the top
     global CAP_SCREW_R
-    CAP_SCREW_R = ri - 4.5
+    CAP_SCREW_R = ri - 3.0     # set into the wall (the cap top is flat now, nothing to clear) and full height to the rim
     for a in (90, 210, 330):
         bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
-        boss = cyl(CHAMBER_H, 5.0, bx, by, SKIRT_H + PLATE_T - 0.1) ^ cyl(CHAMBER_H, ri + 0.5, 0, 0, SKIRT_H)
+        boss = cyl(CHAMBER_H + 0.1, 5.0, bx, by, SKIRT_H + PLATE_T - 0.1) ^ cyl(total, ro, 0, 0, 0)
         m = m + boss
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
     return m
