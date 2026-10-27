@@ -370,10 +370,7 @@ def pipe_cap_top():
     ri = (PIPE_OD + CAP_CLR) / 2
     ro = ri + CAP_WALL
     t = 4.0
-    plug = cyl(2.0, ri - 0.3, z=-2.0) - cyl(4, ri - 3.3, z=-3)         # plug ring locates it in the chamber
-    for a in (90, 210, 330):                                           # notched round the screw bosses
-        plug = plug - cyl(4, 5.6, (ri - 4.5) * np.cos(np.radians(a)), (ri - 4.5) * np.sin(np.radians(a)), -3)
-    m = cyl(t, ro) + plug
+    m = cyl(t, ro)                                                     # flat underside: the 3 screws locate it
     br = ROD_OD / 2 + ROD_CLR / 2 + ROD_BOSS_WALL
     m = m + cyl(ROD_DEPTH + t, br) + cyl(10, br + 6)                  # socket boss + a stiff collar at its foot
     m = m - cyl(ROD_DEPTH + 1, ROD_OD / 2 + ROD_CLR / 2, 0, 0, t)     # rod socket
