@@ -391,14 +391,12 @@ def float_bracket():
     r = PIPE_ID / 2
     back = (cyl(FB_H, r, 0, 0, 0, 160) - cyl(FB_H + 2, r - FB_T, 0, 0, -1, 160)) ^ cube(-FB_W / 2, -r - 1, 0, FB_W / 2, -r + 10, FB_H)
     shelf = cube(-FB_W / 2, -r + FB_T - 0.5, FB_H - SHELF_T, FB_W / 2, -r + FLOAT_OFFSET + 12, FB_H) ^ cyl(FB_H, r - 0.5, 0, 0, 0, 160)
-    gusset = mf.Manifold.hull(cube(-1.5, -r + FB_T - 0.5, FB_H - SHELF_T, 1.5, -r + FLOAT_OFFSET + 6, FB_H - SHELF_T + 0.1)
-                              + cube(-1.5, -r + FB_T - 0.5, FB_H * 0.35, 1.5, -r + FB_T + 0.5, FB_H - SHELF_T))
-    m = back + shelf + gusset
+    m = back + shelf
     m = m - cyl(SHELF_T + 2, FLOAT_STEM_HOLE / 2, 0, -r + FLOAT_OFFSET, FB_H - SHELF_T - 1)
     m = m - cyl(20, M4_CLEAR / 2, 0, 0, 0).rotate([90, 0, 0]).translate([-FB_W / 4, -r + 12, FB_H * 0.3])
     m = m - cyl(20, M4_CLEAR / 2, 0, 0, 0).rotate([90, 0, 0]).translate([FB_W / 4, -r + 12, FB_H * 0.3])
-    # print standing on its shelf's top face: flip so the shelf top is on the bed
-    return m.rotate([180, 0, 0]).translate([0, 0, FB_H])
+    # print lying on its side: the layers then run along the shelf, so it's strong without a brace
+    return m.rotate([0, 90, 0]).translate([0, r, FB_W / 2])
 
 
 def write_stl(m, path):
