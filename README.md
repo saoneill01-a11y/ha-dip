@@ -73,7 +73,7 @@ Cable holes: screw a PG7 cable gland into each (nut inside); tightening its cap 
 Gasket: print `gasket.stl` in TPU, or lay 1.5 mm foam cord in the rim groove.
 
 ### Draft v0.1: check before printing
-- **Probe hole** is a guess (18.6 mm, `PROBE_D`): measure the probes when they arrive.
+- **Probe hole** is 22 mm (`PROBE_D`): the probes measure 21.5 mm, plus 0.5 mm clearance.
 - **Sensor board** screws onto 4 standoffs (M2.5 x 6 into 2.2 mm pilots), holes assumed 3 mm in from each corner
   (`SB_HOLE_INSET`): measure yours.
 - **SuperMini** has no holes: USB end under two corner lips, far end under `esp_clamp.stl` with one screw. It rests
