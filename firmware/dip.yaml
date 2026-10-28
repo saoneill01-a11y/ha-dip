@@ -1,4 +1,4 @@
-# DIP (Depth In Pond), the pond water-level sensor: ESP32-C3 SuperMini, JSN-SR20-Y1 ultrasonic, float switch, 18650 battery.
+# DIP (Depth In Pond), the pond water-level sensor: ESP32-C3 SuperMini, JSN-SR20-Y3.0 ultrasonic, float switch, 18650 battery.
 #
 # What it does:
 #   - Wakes every 20 minutes, takes 5 distance readings, sends the middle one to Home Assistant, sleeps again.

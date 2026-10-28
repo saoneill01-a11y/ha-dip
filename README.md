@@ -2,7 +2,7 @@
 
 A battery-powered water-level sensor for the pond, reporting to Home Assistant over Wi-Fi.
 
-- **Level:** a JSN-SR20-Y1 ultrasonic sensor looks down a 3" PVC "stilling pipe" standing in the pond, so the
+- **Level:** a JSN-SR20-Y3.0 ultrasonic sensor looks down a 3" PVC "stilling pipe" standing in the pond, so the
   waterfall, fountain and net can't confuse it. Reports every 20 minutes.
 - **Tripwire:** a float switch inside the same pipe wakes the board the moment the water drops too low, so a
   plumbing failure is caught in seconds, not 20 minutes.
@@ -17,11 +17,11 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 |---|---|
 | ESP32-C3 SuperMini | on hand |
 | 18650 battery holder (USB-C + micro-USB, same as BLIPR) + 18650 cell | on hand. Set its slide switch SW1 to **stay on** (not auto-shutdown) |
-| JSN-SR20-Y1 ultrasonic sensor (dual probes, 48 x 23 mm board) | ordered |
+| JSN-SR20-Y3.0 ultrasonic sensor (dual probes, 48 x 23 mm board, 21.5 mm probes) | on hand. Leave the MODE pad empty (normal Trig/Echo mode, what the firmware uses). The board is labeled 5V: bench-test it on 3V3 first |
 | Mini vertical float switch (PP, M10 stem) | 16" leads: spliced onto the 4-core cable inside the pipe cap's chamber |
-| DS18B20 waterproof temperature probe (1 m) | ordered. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
-| 4-core outdoor cable, box to pipe cap | carries 3V3, GND, float, probe data through one gland. Splices: solder + adhesive-lined heat shrink |
-| Resistors | 360 kOhm (sensor low-power mode, soldered on the sensor board's MODE pad), 3 x 100 kOhm (battery reading divider + float pull-up), 4.7 kOhm (temperature probe pull-up) |
+| DS18B20 waterproof temperature probe (1 m) | on hand; its included 4.7k resistor is the pull-up. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
+| 4-core outdoor cable, box to pipe cap | carries 3V3, GND (shared by the temperature probe and float), float, temperature data through one gland. The ultrasonic probe leads reach the box on their own. Splices: solder + adhesive-lined heat shrink |
+| Resistors | 3 x 100 kOhm (battery reading divider + float pull-up), 4.7 kOhm (temperature probe pull-up) |
 | 3" PVC pipe (89 mm OD, 76 mm ID), about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
 | Cinder block + pea gravel | holds the pipe upright in the pond (level it while packing the gravel). Cables run along the back of the coping to the box on the post, under the net |
 | 3 x PG7 cable glands | on hand |
@@ -48,6 +48,10 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
   sends the middle one plus the water temperature, sleeps. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in.
   First flash over USB: `esphome run firmware/dip.yaml` (hold BOOT, tap RESET if the board isn't found).
   Test-compiled with ESPHome 2026.10.0.
+- **Bench test before wiring it in:** connect the sensor board to the SuperMini with jumpers (3V3, GND, Trig GPIO6,
+  Echo GPIO7), flash, and check "Distance to water" reads sensibly against a wall. With a meter, check the sensor
+  board's idle current: it stays powered while the ESP32 sleeps, so more than about 1 mA drains the cell in weeks.
+  If either is bad, the sensor gets switched by a GPIO instead.
 - `ha/dip_package.yaml`: Home Assistant package. Pond level in inches below full, "Pond water low", a critical
   phone alert + pumps off when low, pumps back on 10 min after it recovers, alerts if the sensor goes quiet or its
   battery drops below 20 %, and the "DIP stay awake" switch for wireless updates. Check the entity IDs at
@@ -74,8 +78,8 @@ Gasket: print `gasket.stl` in TPU, or lay 1.5 mm foam cord in the rim groove.
 
 ### Draft v0.1: check before printing
 - **Probe hole** is 22 mm (`PROBE_D`): the probes measure 21.5 mm, plus 0.5 mm clearance.
-- **Sensor board** screws onto 4 standoffs (M2.5 x 6 into 2.2 mm pilots), holes assumed 3 mm in from each corner
-  (`SB_HOLE_INSET`): measure yours.
+- **Sensor board** screws onto 4 standoffs (M2.5 x 6 into 2.2 mm pilots), holes 3 mm in from each corner
+  (`SB_HOLE_INSET`): checked against the real board.
 - **SuperMini** has no holes: USB end under two corner lips, far end under `esp_clamp.stl` with one screw. It rests
   on its two short ends only, so solder the wires straight into its pin holes (no header pins underneath).
 - The holder's USB-C port faces into the box with room beside it for a plug, so it charges with the lid off.
