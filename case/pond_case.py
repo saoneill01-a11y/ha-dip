@@ -89,17 +89,17 @@ NAME_Y = 0.62                      # letters centred this far up the lid (0 = bo
 EAR_W, EAR_T, EAR_HOLE_D = 16.0, 4.0, 5.2
 
 # ------------------------------------------------------------------ pipe cap
-PIPE_OD = 88.9        # 3" schedule 40 PVC outside diameter
-PIPE_ID = 77.9        # inside diameter (for the float bracket's curved back)
-CAP_CLR = 0.8         # diameter clearance over the pipe
+PIPE_OD = 89.0        # Sean's 3" PVC, measured
+PIPE_ID = 76.0        # inside diameter, measured (for the float bracket's curved back)
+CAP_CLR = 1.0         # diameter clearance over the pipe (cap bore 90 mm)
 CAP_WALL = 3.0
 SKIRT_H = 28.0        # how far the cap slides down over the pipe
 PLATE_T = 4.0
 PROBE_D = 18.6        # PROBE HOLE: measure your probe body and change this (probes push up from below)
 PROBE_SPACING = 44.0  # centre to centre
 CHAMBER_H = 26.0      # space above the plate for the probe backs and cables
-FLOAT_WIRE_D = 5.0
-TEMP_WIRE_D = 5.0     # DS18B20 probe cable up through the plate
+PLATE_BAND = 31.0     # the plate keeps a solid band this wide across the probes; the rest is open for the cables
+PLATE_LEDGE = 4.0     # and a ledge this wide round the wall
 ROD_OD = 21.3         # 1/2" schedule 40 PVC outside diameter (EMT 1/2" is 17.9: change it)
 ROD_CLR, ROD_DEPTH, ROD_BOSS_WALL = 0.5, 32.0, 3.5
 CAP_SCREW_R = 0.0     # set below
@@ -349,10 +349,10 @@ def pipe_cap():
     # probe holes (probes push up from below and are held by their own nut/flange or a dab of silicone)
     for sx in (-PROBE_SPACING / 2, PROBE_SPACING / 2):
         m = m - cyl(PLATE_T + 2, PROBE_D / 2, sx, 0, SKIRT_H - 1)
-    # float-switch wire up through the plate
-    m = m - cyl(PLATE_T + 2, FLOAT_WIRE_D / 2, 0, -ri + 10, SKIRT_H - 1)
-    # water-temperature probe cable up through the plate (clear of the probes and the screw bosses)
-    m = m - cyl(PLATE_T + 2, TEMP_WIRE_D / 2, -20, ri - 14, SKIRT_H - 1)
+    # open the plate either side of the probe band: less to bridge, and the float and temperature cables drop straight through
+    for side in (1, -1):
+        y0_, y1_ = sorted((side * PLATE_BAND / 2, side * ri))
+        m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # three screw bosses inside the chamber for the top
@@ -361,6 +361,7 @@ def pipe_cap():
     for a in (90, 210, 330):
         bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
         boss = cyl(CHAMBER_H + 0.1, 5.0, bx, by, SKIRT_H + PLATE_T - 0.1) ^ cyl(total, ro, 0, 0, 0)
+        boss = boss + (cyl(PLATE_T, 7.0, bx, by, SKIRT_H) ^ cyl(total, ro, 0, 0, 0))   # a patch of plate under each post
         m = m + boss
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
     return m
