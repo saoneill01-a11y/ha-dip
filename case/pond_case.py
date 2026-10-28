@@ -363,6 +363,8 @@ def pipe_cap():
     # 45-degree chamfer under the ledge on the chamber side, so the cap prints upside down (rim on the bed) without supports there
     zc = SKIRT_H + PLATE_T
     m = m + (cyl(PLATE_LEDGE, ri + 0.5, z=zc - 0.01) - mf.Manifold.cylinder(PLATE_LEDGE + 0.02, ri - PLATE_LEDGE, ri + 0.01, nseg(ri)).translate([0, 0, zc - 0.01]))
+    # step the probe band's chamber-side face 0.1 mm down from the ledge, so the slicer's fill tool paints supports on the band only
+    m = m - (cyl(1.0, ri - PLATE_LEDGE, z=zc - 0.1) ^ cube(-ri, -PLATE_BAND / 2 - 0.01, zc - 0.1, ri, PLATE_BAND / 2 + 0.01, zc + 0.9))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # lock screw through the skirt into the pipe, on the side away from the vent
