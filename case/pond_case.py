@@ -359,12 +359,12 @@ def pipe_cap():
     # open the plate either side of the probe band: less to bridge, and the float and temperature cables drop straight through
     for side in (1, -1):
         y0_, y1_ = sorted((side * PLATE_BAND / 2, side * ri))
-        m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
+        m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1, nseg(ri)) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
     # 45-degree chamfer under the ledge on the chamber side, so the cap prints upside down (rim on the bed) without supports there
     zc = SKIRT_H + PLATE_T
     m = m + (cyl(PLATE_LEDGE, ri + 0.5, z=zc - 0.01) - mf.Manifold.cylinder(PLATE_LEDGE + 0.02, ri - PLATE_LEDGE, ri + 0.01, nseg(ri)).translate([0, 0, zc - 0.01]))
     # step the probe band's chamber-side face 0.1 mm down from the ledge, so the slicer's fill tool paints supports on the band only
-    m = m - (cyl(1.0, ri - PLATE_LEDGE, z=zc - 0.1) ^ cube(-ri, -PLATE_BAND / 2 - 0.01, zc - 0.1, ri, PLATE_BAND / 2 + 0.01, zc + 0.9))
+    m = m - (cyl(1.0, ri - PLATE_LEDGE, z=zc - 0.1, seg=nseg(ri)) ^ cube(-ri, -PLATE_BAND / 2 - 0.01, zc - 0.1, ri, PLATE_BAND / 2 + 0.01, zc + 0.9))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # lock screw through the skirt into the pipe, on the side away from the vent
@@ -372,7 +372,7 @@ def pipe_cap():
     # three screw posts on the chamber wall for the top (short: they hang from the rim)
     post_h = INSERT_DEPTH + 2.0   # just past the insert hole: printed upside down, the posts grow from the bed and end there
     spots = [(CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))) for a in (90, 210, 330)]
-    ring = mf.CrossSection.circle(ro, nseg(ro)) - mf.CrossSection.circle(ri, nseg(ri))
+    ring = mf.CrossSection.circle(ro - 1.0, nseg(ro)) - mf.CrossSection.circle(ri, nseg(ri))   # outer edge buried in the wall (no coincident faces)
     for bx, by in spots:
         ring = ring + mf.CrossSection.circle(5.0, 48).translate([bx, by])
     j = mf.JoinType.Round
