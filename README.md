@@ -22,11 +22,11 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | DS18B20 waterproof temperature probe (1 m) | ordered. Hangs inside the pipe near the bottom; spliced onto the 4-core cable in the cap |
 | 4-core outdoor cable, box to pipe cap | carries 3V3, GND, float, probe data through one gland. Splices: solder + adhesive-lined heat shrink |
 | Resistors | 360 kOhm (sensor low-power mode, soldered on the sensor board's MODE pad), 3 x 100 kOhm (battery reading divider + float pull-up), 4.7 kOhm (temperature probe pull-up) |
-| 3" PVC pipe, about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
-| 1/2" PVC drop rod from the pergola beam | about 7 ft; measure in place |
+| 3" PVC pipe (89 mm OD, 76 mm ID), about 30" long | on hand. 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top |
+| Cinder block + pea gravel | holds the pipe upright in the pond (level it while packing the gravel). Cables run along the back of the coping to the box on the post, under the net |
 | 3 x PG7 cable glands | on hand |
 | 5 x M2.5 x 6 screws (4 sensor board, 1 SuperMini clamp) | |
-| 4 x M3 heat-set inserts + 4 x M3 screws with rubber washers (lid), 3 more inserts + M3 screws (pipe cap top), 2 x M4 screws/nuts | |
+| 4 x M3 heat-set inserts + 4 x M3 screws with rubber washers (lid), 3 more inserts + M3 screws (pipe cap top), 2 x M4 screws (float bracket), 1 short stainless screw (locks the cap to the pipe; pilot-drill the PVC) | |
 
 ## Wiring
 
@@ -65,8 +65,8 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | `box_lid.stl` | lid with a drip edge, two stiffening ribs underneath, washer seats round the 4 corner screws, and "DIP" cut 0.6 mm into the front in BLIPR's lettering (18 mm tall) | as is (already flipped) |
 | `esp_clamp.stl` | small tab that holds the SuperMini's far end down (its USB end slides under two lips first); one M2.5 x 6 screw | flat |
 | `gasket.stl` | TPU ring for the rim groove: 1.6 wide x 1.9 tall, stands 0.5 mm proud so the lid squeezes it about 25 % | 95A TPU, flat, 100 % infill |
-| `pipe_cap.stl` | slides over the 3" pipe, holds both probes, cable chamber above, holes for the float and temperature-probe cables | as is |
-| `pipe_cap_top.stl` | closes the chamber, socket for the 1/2" rod (M4 set screw) | as is |
+| `pipe_cap.stl` | slides over the pipe (90 mm bore), holds both probes on a band across the middle; the rest of the plate is open for the float and temperature cables. Slot in the rim where the 3 cables leave sideways (point it at the post), lock-screw hole in the skirt | as is |
+| `pipe_cap_top.stl` | flat lid: 3 screws into the cap's posts, closes the top of the cable slot. Keeps rain and bugs out (doesn't need to seal: everything in the cap is waterproof) | flat |
 | `float_bracket.stl` | holds the float switch inside the pipe (no brace) | as is: already lying on its side |
 
 Cable holes: screw a PG7 cable gland into each (nut inside); tightening its cap seals round the cable, no silicone needed.
@@ -74,7 +74,6 @@ Gasket: print `gasket.stl` in TPU, or lay 1.5 mm foam cord in the rim groove.
 
 ### Draft v0.1: check before printing
 - **Probe hole** is a guess (18.6 mm, `PROBE_D`): measure the probes when they arrive.
-- **Rod** assumes 1/2" schedule 40 PVC (21.3 mm OD, `ROD_OD`); 1/2" EMT is 17.9.
 - **Sensor board** screws onto 4 standoffs (M2.5 x 6 into 2.2 mm pilots), holes assumed 3 mm in from each corner
   (`SB_HOLE_INSET`): measure yours.
 - **SuperMini** has no holes: USB end under two corner lips, far end under `esp_clamp.stl` with one screw. It rests

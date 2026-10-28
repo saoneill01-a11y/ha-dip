@@ -7,7 +7,7 @@ Writes STL files to out/:
   box          electronics box for the pergola post (battery holder, ESP32-C3 SuperMini, sensor board)
   box_lid      gasketed lid with a drip edge
   pipe_cap     sits on top of the 3" PVC stilling pipe, holds the two ultrasonic probes
-  pipe_cap_top closes the cap's cable chamber and takes the 1/2" PVC drop rod
+  pipe_cap_top closes the cap's cable chamber; the cables leave sideways through a slot in the cap's rim
   float_bracket  holds the float switch inside the pipe (one M4 screw through the pipe wall)
 
 All sizes in mm. Change a number below and re-run.
@@ -100,9 +100,10 @@ PROBE_SPACING = 44.0  # centre to centre
 CHAMBER_H = 26.0      # space above the plate for the probe backs and cables
 PLATE_BAND = 31.0     # the plate keeps a solid band this wide across the probes; the rest is open for the cables
 PLATE_LEDGE = 4.0     # and a ledge this wide round the wall
-ROD_OD = 21.3         # 1/2" schedule 40 PVC outside diameter (EMT 1/2" is 17.9: change it)
-ROD_CLR, ROD_DEPTH, ROD_BOSS_WALL = 0.5, 32.0, 3.5
-CAP_SCREW_R = 0.0     # set below
+CAP_TOP_T = 4.0       # flat cap top
+CABLE_SLOT = (20.0, 12.0)   # cable exit: a slot down from the cap's rim (width, depth); the flat top closes it over the cables
+LOCK_SCREW_D = 3.5    # one screw through the skirt into the pipe so the cap can't twist or lift (pilot-drill the PVC)
+CAP_SCREW_R = (PIPE_OD + CAP_CLR) / 2 - 3.0   # cap-top screws: posts set into the cap wall, full height to the rim
 
 # ------------------------------------------------------------------ float bracket
 FLOAT_STEM_HOLE = 10.6   # M10 stem
@@ -355,29 +356,26 @@ def pipe_cap():
         m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
+    # lock screw through the skirt into the pipe, on the side away from the vent
+    m = m - cyl(CAP_WALL + 4, LOCK_SCREW_D / 2, 0, 0, 0).rotate([0, 90, 0]).translate([ri - 2, 0, SKIRT_H / 2])
     # three screw bosses inside the chamber for the top
-    global CAP_SCREW_R
-    CAP_SCREW_R = ri - 3.0     # set into the wall (the cap top is flat now, nothing to clear) and full height to the rim
     for a in (90, 210, 330):
         bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
         boss = cyl(CHAMBER_H + 0.1, 5.0, bx, by, SKIRT_H + PLATE_T - 0.1) ^ cyl(total, ro, 0, 0, 0)
         boss = boss + (cyl(PLATE_T, 7.0, bx, by, SKIRT_H) ^ cyl(total, ro, 0, 0, 0))   # a patch of plate under each post
         m = m + boss
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
+    # cable exit: a slot down from the rim, between two screw posts; the cables come out sideways under the top
+    nw, nh = CABLE_SLOT
+    m = m - cube(-nw / 2, -ro - 1, total - nh, nw / 2, -ri + 1, total + 1)
     return m
 
 
 def pipe_cap_top():
     ri = (PIPE_OD + CAP_CLR) / 2
     ro = ri + CAP_WALL
-    t = 4.0
+    t = CAP_TOP_T
     m = cyl(t, ro)                                                     # flat underside: the 3 screws locate it
-    br = ROD_OD / 2 + ROD_CLR / 2 + ROD_BOSS_WALL
-    m = m + cyl(ROD_DEPTH + t, br) + cyl(10, br + 6)                  # socket boss + a stiff collar at its foot
-    m = m - cyl(ROD_DEPTH + 1, ROD_OD / 2 + ROD_CLR / 2, 0, 0, t)     # rod socket
-    m = m - cyl(t + 4, 7.0, 0, 0, -3)                                   # cables pass up into the rod
-    # set screw (M4) across the socket
-    m = m - cyl(br + 2, M4_CLEAR / 2 - 0.6, 0, 0, 0).rotate([0, 90, 0]).translate([0, 0, t + ROD_DEPTH * 0.6])
     for a in (90, 210, 330):
         bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
         m = m - cyl(t + 6, SCREW_CLEAR / 2, bx, by, -3)
