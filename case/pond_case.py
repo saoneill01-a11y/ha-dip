@@ -118,8 +118,13 @@ def cube(x0_, y0_, z0_, x1, y1, z1):
     return mf.Manifold.cube([x1 - x0_, y1 - y0_, z1 - z0_]).translate([x0_, y0_, z0_])
 
 
-def cyl(h, r, x=0.0, y=0.0, z=0.0, seg=SEG):
-    return mf.Manifold.cylinder(h, r, r, seg).translate([x, y, z])
+def nseg(r):
+    """Enough sides for a smooth round: at least SEG, and no side longer than about 0.5 mm on big circles."""
+    return max(SEG, int(np.ceil(2 * np.pi * r / 0.5 / 4)) * 4)
+
+
+def cyl(h, r, x=0.0, y=0.0, z=0.0, seg=None):
+    return mf.Manifold.cylinder(h, r, r, seg or nseg(r)).translate([x, y, z])
 
 
 def rrect(w, d, r):
@@ -357,7 +362,7 @@ def pipe_cap():
         m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
     # 45-degree chamfer under the ledge on the chamber side, so the cap prints upside down (rim on the bed) without supports there
     zc = SKIRT_H + PLATE_T
-    m = m + (cyl(PLATE_LEDGE, ri + 0.5, z=zc - 0.01) - mf.Manifold.cylinder(PLATE_LEDGE + 0.02, ri - PLATE_LEDGE, ri + 0.01, SEG).translate([0, 0, zc - 0.01]))
+    m = m + (cyl(PLATE_LEDGE, ri + 0.5, z=zc - 0.01) - mf.Manifold.cylinder(PLATE_LEDGE + 0.02, ri - PLATE_LEDGE, ri + 0.01, nseg(ri)).translate([0, 0, zc - 0.01]))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # lock screw through the skirt into the pipe, on the side away from the vent
@@ -365,7 +370,7 @@ def pipe_cap():
     # three screw posts on the chamber wall for the top (short: they hang from the rim)
     post_h = INSERT_DEPTH + 2.0   # just past the insert hole: printed upside down, the posts grow from the bed and end there
     spots = [(CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))) for a in (90, 210, 330)]
-    ring = mf.CrossSection.circle(ro, SEG * 2) - mf.CrossSection.circle(ri, SEG * 2)
+    ring = mf.CrossSection.circle(ro, nseg(ro)) - mf.CrossSection.circle(ri, nseg(ri))
     for bx, by in spots:
         ring = ring + mf.CrossSection.circle(5.0, 48).translate([bx, by])
     j = mf.JoinType.Round
@@ -393,8 +398,8 @@ def pipe_cap_top():
 def float_bracket():
     """Curved back fits the pipe's inside wall; the float stem goes through the shelf, float hanging below."""
     r = PIPE_ID / 2
-    back = (cyl(FB_H, r, 0, 0, 0, 160) - cyl(FB_H + 2, r - FB_T, 0, 0, -1, 160)) ^ cube(-FB_W / 2, -r - 1, 0, FB_W / 2, -r + 10, FB_H)
-    shelf = cube(-FB_W / 2, -r + FB_T - 0.5, FB_H - SHELF_T, FB_W / 2, -r + FLOAT_OFFSET + 12, FB_H) ^ cyl(FB_H, r - 0.5, 0, 0, 0, 160)
+    back = (cyl(FB_H, r) - cyl(FB_H + 2, r - FB_T, 0, 0, -1)) ^ cube(-FB_W / 2, -r - 1, 0, FB_W / 2, -r + 10, FB_H)
+    shelf = cube(-FB_W / 2, -r + FB_T - 0.5, FB_H - SHELF_T, FB_W / 2, -r + FLOAT_OFFSET + 12, FB_H) ^ cyl(FB_H, r - 0.5)
     m = back + shelf
     m = m - cyl(SHELF_T + 2, FLOAT_STEM_HOLE / 2, 0, -r + FLOAT_OFFSET, FB_H - SHELF_T - 1)
     m = m - cyl(20, M4_CLEAR / 2, 0, 0, 0).rotate([90, 0, 0]).translate([-FB_W / 4, -r + 12, FB_H * 0.3])
