@@ -102,6 +102,7 @@ PLATE_BAND = 31.0     # the plate keeps a solid band this wide across the probes
 PLATE_LEDGE = 4.0     # and a ledge this wide round the wall
 CAP_TOP_T = 4.0       # flat cap top
 CABLE_SLOT = (20.0, 12.0)   # cable exit: a slot down from the cap's rim (width, depth); the flat top closes it over the cables
+POST_FILLET = 3.0     # radius where the cap's screw posts meet the wall
 LOCK_SCREW_D = 3.5    # one screw through the skirt into the pipe so the cap can't twist or lift (pilot-drill the PVC)
 CAP_SCREW_R = (PIPE_OD + CAP_CLR) / 2 - 3.0   # cap-top screws: posts set into the cap wall, full height to the rim
 
@@ -362,11 +363,15 @@ def pipe_cap():
     # lock screw through the skirt into the pipe, on the side away from the vent
     m = m - cyl(CAP_WALL + 4, LOCK_SCREW_D / 2, 0, 0, 0).rotate([0, 90, 0]).translate([ri - 2, 0, SKIRT_H / 2])
     # three screw posts on the chamber wall for the top (short: they hang from the rim)
-    for a in (90, 210, 330):
-        bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
-        post_h = INSERT_DEPTH + 2.0   # just past the insert hole: printed upside down, the post grows from the bed and ends there
-        boss = cyl(post_h, 5.0, bx, by, total - post_h) ^ cyl(total, ro, 0, 0, 0)
-        m = m + boss
+    post_h = INSERT_DEPTH + 2.0   # just past the insert hole: printed upside down, the posts grow from the bed and end there
+    spots = [(CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))) for a in (90, 210, 330)]
+    ring = mf.CrossSection.circle(ro, SEG * 2) - mf.CrossSection.circle(ri, SEG * 2)
+    for bx, by in spots:
+        ring = ring + mf.CrossSection.circle(5.0, 48).translate([bx, by])
+    j = mf.JoinType.Round
+    ring = ring.offset(POST_FILLET, j, 2.0, 96).offset(-POST_FILLET, j, 2.0, 96)   # radius where each post meets the wall
+    m = m + prism(ring, total - post_h, total)
+    for bx, by in spots:
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
     # cable exit: a slot down from the rim, between two screw posts; the cables come out sideways under the top
     nw, nh = CABLE_SLOT
