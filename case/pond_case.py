@@ -361,11 +361,11 @@ def pipe_cap():
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # lock screw through the skirt into the pipe, on the side away from the vent
     m = m - cyl(CAP_WALL + 4, LOCK_SCREW_D / 2, 0, 0, 0).rotate([0, 90, 0]).translate([ri - 2, 0, SKIRT_H / 2])
-    # three screw bosses inside the chamber for the top
+    # three screw posts on the chamber wall for the top (short: they hang from the rim)
     for a in (90, 210, 330):
         bx, by = CAP_SCREW_R * np.cos(np.radians(a)), CAP_SCREW_R * np.sin(np.radians(a))
-        boss = cyl(CHAMBER_H + 0.1, 5.0, bx, by, SKIRT_H + PLATE_T - 0.1) ^ cyl(total, ro, 0, 0, 0)
-        boss = boss + (cyl(PLATE_T, 7.0, bx, by, SKIRT_H) ^ cyl(total, ro, 0, 0, 0))   # a patch of plate under each post
+        post_h = INSERT_DEPTH + 2.0   # just past the insert hole: printed upside down, the post grows from the bed and ends there
+        boss = cyl(post_h, 5.0, bx, by, total - post_h) ^ cyl(total, ro, 0, 0, 0)
         m = m + boss
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
     # cable exit: a slot down from the rim, between two screw posts; the cables come out sideways under the top
