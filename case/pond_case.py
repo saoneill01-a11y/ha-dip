@@ -354,6 +354,9 @@ def pipe_cap():
     for side in (1, -1):
         y0_, y1_ = sorted((side * PLATE_BAND / 2, side * ri))
         m = m - (cyl(PLATE_T + 2, ri - PLATE_LEDGE, 0, 0, SKIRT_H - 1) ^ cube(-ri, y0_, SKIRT_H - 1, ri, y1_, SKIRT_H + PLATE_T + 1))
+    # 45-degree chamfer under the ledge on the chamber side, so the cap prints upside down (rim on the bed) without supports there
+    zc = SKIRT_H + PLATE_T
+    m = m + (cyl(PLATE_LEDGE, ri + 0.5, z=zc - 0.01) - mf.Manifold.cylinder(PLATE_LEDGE + 0.02, ri - PLATE_LEDGE, ri + 0.01, SEG).translate([0, 0, zc - 0.01]))
     # air vent in the skirt (so the water inside can rise and fall)
     m = m - cyl(10, 1.6, 0, 0, 0).rotate([90, 0, 0]).translate([0, -ri + 1, SKIRT_H - 6])
     # lock screw through the skirt into the pipe, on the side away from the vent

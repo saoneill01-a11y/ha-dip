@@ -65,7 +65,7 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 | `box_lid.stl` | lid with a drip edge, two stiffening ribs underneath, washer seats round the 4 corner screws, and "DIP" cut 0.6 mm into the front in BLIPR's lettering (18 mm tall) | as is (already flipped) |
 | `esp_clamp.stl` | small tab that holds the SuperMini's far end down (its USB end slides under two lips first); one M2.5 x 6 screw | flat |
 | `gasket.stl` | TPU ring for the rim groove: 1.6 wide x 1.9 tall, stands 0.5 mm proud so the lid squeezes it about 25 % | 95A TPU, flat, 100 % infill |
-| `pipe_cap.stl` | slides over the pipe (90 mm bore), holds both probes on a band across the middle; the rest of the plate is open for the float and temperature cables. Slot in the rim where the 3 cables leave sideways (point it at the post), lock-screw hole in the skirt | as is |
+| `pipe_cap.stl` | slides over the pipe (90 mm bore), holds both probes on a band across the middle; the rest of the plate is open for the float and temperature cables. Slot in the rim where the 3 cables leave sideways (point it at the post), lock-screw hole in the skirt. 45-degree chamfer under the ledge | upside down (rim on the bed); supports only under the probe band |
 | `pipe_cap_top.stl` | flat lid: 3 screws into the cap's posts, closes the top of the cable slot. Keeps rain and bugs out (doesn't need to seal: everything in the cap is waterproof) | flat |
 | `float_bracket.stl` | holds the float switch inside the pipe (no brace) | as is: already lying on its side |
 
