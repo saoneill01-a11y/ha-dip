@@ -7,7 +7,7 @@
 #   - Sends pond water temperature, battery voltage and %, float state and Wi-Fi signal each time.
 #   - Turn on "DIP stay awake" in Home Assistant to keep it awake for updates (it checks on each wake).
 #
-# Pins (see ../docs/wiring.svg):
+# Pins (see ../docs/guide/d_overview.png):
 #   GPIO3  float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
 #   GPIO4  battery voltage through a 100k/100k divider
 #   GPIO6  sensor Trig     GPIO7  sensor Echo

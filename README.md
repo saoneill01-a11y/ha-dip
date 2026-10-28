@@ -30,17 +30,21 @@ A battery-powered water-level sensor for the pond, reporting to Home Assistant o
 
 ## Wiring
 
-![Wiring](docs/wiring.png)
+Step-by-step build, soldering and testing: [docs/DIP-assembly-guide.docx](docs/DIP-assembly-guide.docx)
+(rebuilt by the scripts in `docs/guide/`).
+
+![Wiring](docs/guide/d_overview.png)
 
 | SuperMini pin | Goes to |
 |---|---|
-| 3V3 | holder 3V +, sensor VCC, 100k pull-up for the float |
-| GND | holder 3V -, sensor GND, float wire 2, bottom of the battery divider |
-| GPIO3 | float switch wire 1 (+ 100k to 3V3). Wakes the board instantly. Float must be OPEN when the water is normal |
-| GPIO4 | middle of the 100k/100k divider from the cell's + (battery reading) |
-| GPIO6 | sensor Trig |
-| GPIO7 | sensor Echo |
-| GPIO5 | temperature probe data (yellow) + 4.7k to 3V3; probe red to 3V3, black to GND |
+| 3.3 / G | holder 3V pair 1 (+ / -) |
+| GPIO4 | middle of the 100k/100k divider: 100k (A) to the holder's + battery contact, 100k (B) to G |
+| GPIO6 / GPIO7 | sensor Trig / Echo (sensor 5V and GND pins from holder 3V pair 2) |
+| GPIO5 | 4-core wire 3, temperature data (4.7k from wire 1) |
+| GPIO3 | 4-core wire 4, float (100k (C) from wire 1). Wakes the board. Float must be OPEN when the water is normal |
+
+4-core wires 1 / 2 (3.3V / GND) go to holder 3V pair 3. The two pull-ups sit at the cable's box end. At the pipe cap:
+wire 1 to the probe's red, wire 2 to the probe's black and one float wire, wire 3 to yellow, wire 4 to the other float wire.
 
 ## Firmware (`firmware/`) and Home Assistant (`ha/`)
 
