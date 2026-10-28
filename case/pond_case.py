@@ -375,7 +375,7 @@ def pipe_cap():
         m = m - cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, bx, by, total - INSERT_DEPTH)
     # cable exit: a slot down from the rim, between two screw posts; the cables come out sideways under the top
     nw, nh = CABLE_SLOT
-    m = m - cube(-nw / 2, -ro - 1, total - nh, nw / 2, -ri + 1, total + 1)
+    m = m - cube(-nw / 2, -ro - 1, total - nh, nw / 2, -ri + 6, total + 1)   # runs well past the curved inside of the wall
     return m
 
 
