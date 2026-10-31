@@ -243,8 +243,9 @@ def box():
     H = FLOOR + IH
     shell = rbox(0, 0, 0, OW, OD, H, R_OUT) - rbox(WALL, WALL, FLOOR, IW, ID, IH + 1, R_OUT - WALL)
     adds, cuts = [shell], []
-    # ears for the post (top and bottom ends of the back plate), two screw holes each
-    for ey in (-EAR_W, OD):
+    # ear for the post at the top end of the back plate, two screw holes. v0.3: no bottom ear: the cable glands
+    # sit right over it, so its screws couldn't be reached (the two top screws hold the box).
+    for ey in (OD,):
         ay = ey if ey < 0 else OD - R_OUT                     # each ear reaches R_OUT into the box's back plate
         adds.append(rbox(6.0, ay, 0, OW - 12.0, EAR_W + R_OUT, EAR_T, 4.0))
         for ex in (OW * 0.28, OW * 0.72):
