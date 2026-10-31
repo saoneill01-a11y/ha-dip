@@ -17,7 +17,7 @@ level and temperature, and shuts the pond pumps off before they can run dry.
 - **Power:** one 18650 cell in a USB-C charging holder. The ESP32-C3 SuperMini sleeps between readings
   (about 20 seconds awake every 20 minutes).
 
-**The full build, step by step, with pictures:** [docs/DIP-assembly-guide.docx](docs/DIP-assembly-guide.docx).
+**The full build, step by step, with pictures:** [docs/DIP-assembly-guide.pdf](docs/DIP-assembly-guide.pdf) (Word version: [docx](docs/DIP-assembly-guide.docx)).
 No electronics experience needed; you test as you go.
 
 ## Parts
