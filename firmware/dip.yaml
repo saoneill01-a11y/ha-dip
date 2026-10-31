@@ -96,6 +96,12 @@ script:
           then:
             - logger.log: "Stay-awake is on: not sleeping"
             - deep_sleep.prevent: sleeper
+            - if:                # after a reboot the switch is already on, so on_press never fires: start the loop here
+                condition:
+                  not:
+                    script.is_running: awake_loop
+                then:
+                  - script.execute: awake_loop
           else:
             - deep_sleep.enter:
                 id: sleeper
