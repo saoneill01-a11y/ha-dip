@@ -152,7 +152,7 @@ sensor:
     update_interval: never
     accuracy_decimals: 2
     filters:
-      - multiply: 2.0        # 100k/100k divider
+      - multiply: 2.033      # 100k/100k divider (2.0), x1.0167 calibrated against a meter Oct 31, 2026 (4.08 V vs 4.013 read)
     on_value:
       then:
         - component.update: battery_percent
@@ -166,9 +166,9 @@ sensor:
     accuracy_decimals: 0
     update_interval: never
     lambda: |-
-      // simple Li-ion curve: 3.3 V = empty, 4.15 V = full
+      // simple Li-ion curve: 3.3 V = empty, 4.08 V = full (what this holder charges to, measured Oct 31, 2026)
       float v = id(battery_voltage).state;
-      float p = (v - 3.3f) / (4.15f - 3.3f) * 100.0f;
+      float p = (v - 3.3f) / (4.08f - 3.3f) * 100.0f;
       return p < 0 ? 0 : (p > 100 ? 100 : p);
 
   - platform: wifi_signal
