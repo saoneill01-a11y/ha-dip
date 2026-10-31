@@ -99,3 +99,7 @@ PETG or ASA outdoors; PLA goes soft in the sun.
   undersides. The sensor board moved away from the battery holder. The bottom mounting tab was removed, because
   the glands blocked its screws.
 - **v0.2:** first build.
+
+## License
+
+MIT: see [LICENSE](LICENSE). That covers the firmware, the Home Assistant package, the case models and the guide.

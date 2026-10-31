@@ -4,7 +4,7 @@ no charge-port or button holes; charge with the lid off or take the cell out).
 
 Run:  python3 pond_case.py        (needs: pip install manifold3d numpy)
 Writes STL files to out/:
-  box          electronics box for the pergola post (battery holder, ESP32-C3 SuperMini, sensor board)
+  box          electronics box that hangs on a post (battery holder, ESP32-C3 SuperMini, sensor board)
   box_lid      gasketed lid with a drip edge
   pipe_cap     sits on top of the 3" PVC stilling pipe, holds the two ultrasonic probes
   pipe_cap_top closes the cap's cable chamber; the cables leave sideways through a slot in the cap's rim
@@ -24,8 +24,8 @@ import manifold3d as mf
 SEG = 64
 
 # ------------------------------------------------------------------ box
-WALL = 3.2          # thicker than BLIPR so the rim can carry a gasket groove
-FLOOR = 2.4         # back plate (against the post); same as BLIPR so the holder pads are the same height
+WALL = 3.2          # thick enough for the rim to carry a gasket groove
+FLOOR = 2.4         # back plate (against the post)
 IW, ID, IH = 72.0, 140.0, 40.0   # inside width (X), height up the post (Y), depth out from the post (Z)
 # IH 40 (was 34): the sensor board's two probe plugs and its 4 jumper wires stand straight up off the board's
 # connector side, which faces the lid. 40 leaves about 25 mm above the board even under a lid rib.
@@ -33,14 +33,14 @@ R_OUT = 6.0
 OW, OD = IW + 2 * WALL, ID + 2 * WALL
 x0, y0 = WALL, WALL                # inside origin
 
-# battery holder: the same 4-pad mount as BLIPR's base (Sean's CAD): 25.0 x 94.7 mm hole pattern,
-# round pads (8 mm here, 10 on BLIPR), top 7.4 mm above the outside of the floor, 2.9 mm screw holes.
+# battery holder: 4-pad mount, 25.0 x 94.7 mm hole pattern,
+# round 8 mm pads, top 7.4 mm above the outside of the floor, 2.9 mm screw holes.
 # It stands up the left side. Its USB-C port faces IN (to the right) so a cable plugs in with the lid off;
 # the cell lifts straight out of the holder too. No holes in the walls for the port or the button.
-HOLD_COLS_X = (4.5, 29.5)          # pad columns (4.5 mm from the left wall, as BLIPR's 4.5 mm wall gap)
+HOLD_COLS_X = (4.5, 29.5)          # pad columns (4.5 mm from the left wall)
 HOLD_ROWS_Y = (30.0, 124.7)        # pad rows; the port end of the holder is at the top
 PAD_D, PAD_TOP, PAD_HOLE_D = 8.0, 7.4, 2.9   # 8 mm pads (10 hit parts under the holder), 2.9 mm holes (2.8 was too tight)
-PORT_FROM_TOP_HOLE = 21.45         # USB-C port centre below the top pad row (measured from BLIPR's base)
+PORT_FROM_TOP_HOLE = 21.45         # USB-C port centre below the top pad row (measured)
 PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
@@ -51,7 +51,7 @@ SENSOR_BOARD = (48.0, 14.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 
 # The sensor board screws down onto 4 standoffs (its parts side faces the back plate, so 7 mm clears its button and
 # chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
 SB_HOLE_INSET = 3.0
-SB_POST_D, SB_PILOT_D = 5.5, 2.2   # M2.5 x 6 screws thread straight into the 2.2 mm pilot (same as BLIPR's sensor boards)
+SB_POST_D, SB_PILOT_D = 5.5, 2.2   # M2.5 x 6 screws thread straight into the 2.2 mm pilot
 SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
 # The SuperMini has no screw holes: its USB end slides under two corner lips (either side of the USB-C socket),
 # then a printed tab (esp_clamp.stl) screws down over its other end with one M2.5 x 6 into a post.
@@ -69,7 +69,7 @@ GLANDS_X = (IW / 2 - GLAND_PITCH, IW / 2, IW / 2 + GLAND_PITCH)
 GLAND_D, GLAND_Z = 12.6, FLOOR + 16.0
 VENT_D, VENT_X, VENT_Z = 2.0, 10.5, FLOOR + IH - 7.0   # tiny breather in the bottom end
 
-# lid screws: M3 heat-set inserts (same as BLIPR) in 8 mm corner columns, given by their inside-corner (x, y)
+# lid screws: M3 heat-set inserts in 8 mm corner columns, given by their inside-corner (x, y)
 COL = 8.0
 INSERT_D, INSERT_DEPTH, SCREW_CLEAR = 4.1, 7.5, 3.4
 COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL)]   # four corners only
@@ -85,8 +85,8 @@ RIBS_X = (IW * 0.30, IW * 0.70)     # run up the box (inside X); clear of the ba
 GROOVE_W, GROOVE_D = 1.8, 1.4
 GASKET_W, GASKET_H = 1.6, 1.9
 LID_T, LID_LIP, LID_OVER = 3.0, 4.0, 1.6           # lid thickness, drip lip height, overhang past the walls
-# "DIP" cut into the lid's front face in BLIPR's lettering (same rounded block letters as BLIPR's lid, scaled up:
-# BLIPR's are 12 mm tall with a 2.4 mm stroke; the stroke scales with the height so the letters keep their shape)
+# "DIP" cut into the lid's front face in rounded block letters (drawn 12 mm tall with a 2.4 mm stroke and scaled
+# up; the stroke scales with the height so the letters keep their shape)
 NAME_TEXT = "DIP"
 NAME_H, NAME_DEPTH = 18.0, 0.6
 NAME_STROKE = 2.4 * NAME_H / 12.0
@@ -96,7 +96,7 @@ NAME_Y = 0.62                      # letters centred this far up the lid (0 = bo
 EAR_W, EAR_T, EAR_HOLE_D = 16.0, 4.0, 5.2
 
 # ------------------------------------------------------------------ pipe cap
-PIPE_OD = 89.0        # Sean's 3" PVC, measured
+PIPE_OD = 89.0        # 3" PVC, measured
 PIPE_ID = 76.0        # inside diameter, measured (for the float bracket's curved back)
 CAP_CLR = 1.0         # diameter clearance over the pipe (cap bore 90 mm)
 CAP_WALL = 3.0
@@ -301,10 +301,10 @@ def box():
 
 
 def name_shape(cx, cy):
-    """NAME_TEXT as a flat outline in BLIPR's rounded block letters, centred on (cx, cy), reading normally
+    """NAME_TEXT as a flat outline in rounded block letters, centred on (cx, cy), reading normally
     from the front of the box (X to the right, Y up)."""
     H, sw = NAME_H, NAME_STROKE
-    k = H / 12.0                      # BLIPR's letter shapes were drawn 12 mm tall
+    k = H / 12.0                      # the letter shapes were drawn 12 mm tall
     r = 3.0 * k
 
     def box2(u0, v0, u1, v1):
@@ -316,7 +316,7 @@ def name_shape(cx, cy):
                 - rrect(w - 2 * sw, h - 2 * sw, max(r - sw, 0.4)).translate([u0 + sw, v0 + sw]))
 
     stem = box2(0, 0, sw, H)
-    glyphs = {                        # (width, outline) per letter, same proportions as BLIPR's B, L, I, P, R
+    glyphs = {                        # (width, outline) per letter, the same proportions for every letter
         "D": (8.4 * k, stem + ring(0, 0, 8.4 * k, H)),
         "I": (sw, stem),
         "P": (8.0 * k, stem + ring(0, H * 0.42 - sw / 2, 8.0 * k, H)),

@@ -58,7 +58,7 @@ H_TOP = P.FLOOR + P.IH + P.LID_T
 lid_on = P.box_lid().translate([0, -P.OD, -H_TOP]).rotate([180, 0, 0])
 P.write_stl(lid_on, f"{d}/_dummy_lid_on.stl")
 views([f"{d}/box.stl", f"{d}/_dummy_lid_on.stl"], f"{d}/preview_front.png",
-      [(62, -18, "On the post, lid on (DIP in BLIPR's lettering)")], colors=[grey, (0.80, 0.82, 0.86)], size=(6.5, 6.4))
+      [(62, -18, "On the post, lid on")], colors=[grey, (0.80, 0.82, 0.86)], size=(6.5, 6.4))
 off = [None, (0, 0, 70), (120, 0, 0)]
 views([f"{d}/pipe_cap.stl", f"{d}/pipe_cap_top.stl", f"{d}/float_bracket.stl"], f"{d}/preview_pipe.png",
       [(25, -50, "Pipe cap, cap top + rod socket, float bracket"), (-55, -50, "Underneath: the two probe holes")],
