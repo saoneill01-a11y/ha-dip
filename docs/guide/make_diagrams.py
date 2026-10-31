@@ -61,7 +61,7 @@ def overview():
     for lab, y in [("6", 70), ("7", 66), ("5", 54), ("3", 50)]:
         ax.text(68.5, y, lab, ha="right", va="center", fontsize=FS, weight="bold")
     # sensor board
-    box(ax, 92, 56, 34, 22, "Ultrasonic sensor board", "JSN-SR20-Y3.0, MODE pad left empty")
+    box(ax, 92, 56, 34, 22, "Ultrasonic sensor board", "JSN-SR20, MODE pad left empty")
     for lab, y in [("5V", 68), ("Trig", 64.5), ("Echo", 61), ("GND", 57.5)]:
         ax.text(93.5, y, lab, ha="left", va="center", fontsize=FS - 1)
     ax.text(124, 62, "2 probes plug\ninto the white\nsockets", ha="right", va="center", fontsize=FS - 2, color="#555")

@@ -1,42 +1,57 @@
 # DIP (Depth In Pond): the Home Assistant side.
 #
-# Install: put this file in config/packages/ and make sure configuration.yaml has
-#   homeassistant:
-#     packages: !include_dir_named packages
-# then restart Home Assistant. (Claude Code can do this for you.)
+# What it does
+#   - "Pond level below full": how far the water is below full, in inches (0 = full).
+#   - Water 3 in below full (two reports in a row) -> turns off the FIRST pump and sends a phone warning.
+#   - Water below the float switch -> turns off ALL the pumps and sends a critical alert (comes through on silent).
+#   - Each pump comes back on by itself once the water is back up, but only pumps this package turned off.
+#   - Alerts if DIP stops reporting for 50 minutes or its battery drops below 20 %.
+#   - "DIP stay awake" switch: keeps DIP awake for wireless updates (it checks on each wake, every 20 minutes).
 #
-# CHECK THESE ENTITY IDs against your system before using:
-#   switch.pond_pumps          the Tuya "Pond Pumps" outdoor plug
-#   notify.mobile_app_max17    Sean's phone
-#   sensor.dip_*  / binary_sensor.dip_*  created by the ESPHome device "DIP"
+# Install
+#   1. Put this file in your Home Assistant config/packages/ folder. configuration.yaml needs:
+#        homeassistant:
+#          packages: !include_dir_named packages
+#   2. Change the entity IDs below to yours (search and replace):
+#        switch.pond_pump_first   the pump that stops first, at 3 in down (e.g. a waterfall or bog pump)
+#        switch.pond_pump_last    the pump that keeps running until the float drops (e.g. the fountain)
+#        notify.mobile_app_your_phone   your phone (Settings > Companion app shows its name)
+#      Only one pump? Use the same switch for both.
+#      DIP's own entities (sensor.dip_*, binary_sensor.dip_*) are named by the firmware, so leave them.
+#   3. Check the configuration (Developer tools > YAML > Check configuration), then restart Home Assistant.
+#   4. Calibrate: with the pond full, read DIP's "Distance to water" and type it into "Pond full distance".
 #
-# After the sensor is in place: with the pond full (water at the overflow), copy the "Distance to water"
-# reading into "Pond full distance". Everything else is measured from that.
+# Units: the firmware reports distance in cm and this package shows the level in inches. If you changed DIP's
+# "Distance to water" to show in inches (its entity settings), type the full distance in inches instead and
+# change the "/ 2.54" in the template below to "/ 1".
 
 input_boolean:
   dip_stay_awake:
     name: DIP stay awake
     icon: mdi:sleep-off
-  pond_pumps_stopped_for_low_water:
-    name: Pond pumps stopped for low water
+  pond_first_pump_stopped:
+    name: First pump stopped for low water
+    icon: mdi:pump-off
+  pond_last_pump_stopped:
+    name: Last pump stopped for low water
     icon: mdi:pump-off
 
 input_number:
   pond_full_distance:
     name: Pond full distance
     unit_of_measurement: cm
-    min: 2
-    max: 100
-    step: 0.5
+    min: 0
+    max: 200
+    step: 0.1
     mode: box
     icon: mdi:waves-arrow-up
-  pond_low_alert_drop:
-    name: Pond low-water alert level
+  pond_first_pump_off_drop:
+    name: Pond drop that stops the first pump
     unit_of_measurement: in
     min: 1
     max: 12
     step: 0.5
-    initial: 4
+    initial: 3
     mode: box
     icon: mdi:waves-arrow-down
 
@@ -45,100 +60,159 @@ template:
       - name: Pond level below full
         unique_id: pond_level_below_full
         unit_of_measurement: in
+        state_class: measurement
         icon: mdi:waves
         state: >
-          {% set d = states('sensor.dip_distance_to_water') | float(none) %}
-          {% set full = states('input_number.pond_full_distance') | float(none) %}
-          {{ ((d - full) / 2.54) | round(1) }}
+          {{ ((states('sensor.dip_distance_to_water') | float - states('input_number.pond_full_distance') | float) / 2.54) | round(1) }}
         availability: >
-          {{ is_number(states('sensor.dip_distance_to_water'))
-             and is_number(states('input_number.pond_full_distance')) }}
-  - binary_sensor:
-      - name: Pond water low
-        unique_id: pond_water_low
-        device_class: problem
-        icon: mdi:waves-arrow-down
-        state: >
-          {{ is_state('binary_sensor.dip_float_switch_low', 'on')
-             or states('sensor.pond_level_below_full') | float(0) >= states('input_number.pond_low_alert_drop') | float(99) }}
+          {{ is_number(states('sensor.dip_distance_to_water')) and states('input_number.pond_full_distance') | float(0) > 0 }}
 
 automation:
-  - id: pond_low_water_stop_pumps
-    alias: "Pond: low water - stop pumps and alert"
-    mode: single
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.pond_water_low
-        to: "on"
-    actions:
-      - action: switch.turn_off
-        target:
-          entity_id: switch.pond_pumps
-      - action: input_boolean.turn_on
-        target:
-          entity_id: input_boolean.pond_pumps_stopped_for_low_water
-      - action: notify.mobile_app_max17
-        data:
-          title: "Pond water is LOW"
-          message: >
-            Level is {{ states('sensor.pond_level_below_full') }} in below full
-            (float switch {{ 'tripped' if is_state('binary_sensor.dip_float_switch_low', 'on') else 'OK' }}).
-            Pond pumps turned off.
-          data:
-            push:
-              interruption-level: critical   # comes through even on silent / Do Not Disturb
-              sound:
-                name: default
-                critical: 1
-                volume: 1.0
-
-  - id: pond_recovered_restart_pumps
-    alias: "Pond: water back up - restart pumps"
-    mode: single
-    triggers:
-      - trigger: state
-        entity_id: binary_sensor.pond_water_low
-        to: "off"
-        for: "00:10:00"
-    conditions:
-      - condition: state
-        entity_id: input_boolean.pond_pumps_stopped_for_low_water
-        state: "on"
-    actions:
-      - action: switch.turn_on
-        target:
-          entity_id: switch.pond_pumps
-      - action: input_boolean.turn_off
-        target:
-          entity_id: input_boolean.pond_pumps_stopped_for_low_water
-      - action: notify.mobile_app_max17
-        data:
-          title: "Pond back to normal"
-          message: "Level is {{ states('sensor.pond_level_below_full') }} in below full. Pumps are back on."
-
-  - id: dip_silent
-    alias: "Pond: sensor stopped reporting"
+  # Two DIP reports in a row (20 minutes apart) so one stray echo doesn't stop the pump.
+  - id: pond_low_stop_first_pump
+    alias: "Pond: water low - stop the first pump"
     mode: single
     triggers:
       - trigger: template
         value_template: >
-          {% set s = states.sensor.dip_distance_to_water %}
+          {{ states('sensor.pond_level_below_full') | float(0) >= states('input_number.pond_first_pump_off_drop') | float(99) }}
+        for: "00:21:00"
+    conditions:
+      - condition: state
+        entity_id: switch.pond_pump_first
+        state: "on"
+    actions:
+      - action: switch.turn_off
+        target:
+          entity_id: switch.pond_pump_first
+      - action: input_boolean.turn_on
+        target:
+          entity_id: input_boolean.pond_first_pump_stopped
+      - action: notify.mobile_app_your_phone
+        data:
+          title: "Pond is low: first pump off"
+          message: "Water is {{ states('sensor.pond_level_below_full') }} in below full."
+
+  - id: pond_float_low_stop_pumps
+    alias: "Pond: below the float - stop all pumps"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.dip_float_switch_low
+        to: "on"
+        for: "00:00:30"
+    actions:
+      - if:
+          - condition: state
+            entity_id: switch.pond_pump_first
+            state: "on"
+        then:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.pond_pump_first
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.pond_first_pump_stopped
+      - if:
+          - condition: state
+            entity_id: switch.pond_pump_last
+            state: "on"
+        then:
+          - action: switch.turn_off
+            target:
+              entity_id: switch.pond_pump_last
+          - action: input_boolean.turn_on
+            target:
+              entity_id: input_boolean.pond_last_pump_stopped
+      - action: notify.mobile_app_your_phone
+        data:
+          title: "Pond water is LOW"
+          message: "Water is below the float switch. All pond pumps are off."
+          data:
+            push:
+              interruption-level: critical   # iPhone: comes through on silent / Do Not Disturb
+              sound:
+                name: default
+                critical: 1
+                volume: 1.0
+            ttl: 0                           # Android: deliver right away
+            priority: high
+
+  - id: pond_float_ok_restart_last_pump
+    alias: "Pond: float back up - restart the last pump"
+    mode: single
+    triggers:
+      - trigger: state
+        entity_id: binary_sensor.dip_float_switch_low
+        to: "off"
+        for: "00:10:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.pond_last_pump_stopped
+        state: "on"
+    actions:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.pond_pump_last
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pond_last_pump_stopped
+      - action: notify.mobile_app_your_phone
+        data:
+          title: "Pond: pump back on"
+          message: "The float is back up. Water is {{ states('sensor.pond_level_below_full') }} in below full."
+
+  # Back on once the water is 1 in above the stop level, so it doesn't flip on and off.
+  - id: pond_level_ok_restart_first_pump
+    alias: "Pond: water back up - restart the first pump"
+    mode: single
+    triggers:
+      - trigger: template
+        value_template: >
+          {{ states('sensor.pond_level_below_full') | float(99) <= states('input_number.pond_first_pump_off_drop') | float(0) - 1 }}
+        for: "00:21:00"
+    conditions:
+      - condition: state
+        entity_id: input_boolean.pond_first_pump_stopped
+        state: "on"
+      - condition: state
+        entity_id: binary_sensor.dip_float_switch_low
+        state: "off"
+    actions:
+      - action: switch.turn_on
+        target:
+          entity_id: switch.pond_pump_first
+      - action: input_boolean.turn_off
+        target:
+          entity_id: input_boolean.pond_first_pump_stopped
+      - action: notify.mobile_app_your_phone
+        data:
+          title: "Pond: first pump back on"
+          message: "Water is {{ states('sensor.pond_level_below_full') }} in below full."
+
+  - id: dip_silent
+    alias: "Pond: DIP stopped reporting"
+    mode: single
+    triggers:
+      - trigger: template
+        value_template: >
+          {% set s = states.sensor.dip_battery_voltage %}
           {{ s is not none and now() - s.last_reported > timedelta(minutes=50) }}
     actions:
-      - action: notify.mobile_app_max17
+      - action: notify.mobile_app_your_phone
         data:
           title: "DIP is quiet"
-          message: "No reading for 50 minutes. Battery flat or Wi-Fi trouble?"
+          message: "No pond reading for 50 minutes, so the pumps aren't being watched. Battery flat or Wi-Fi trouble?"
 
   - id: dip_battery_low
-    alias: "Pond: sensor battery low"
+    alias: "Pond: DIP battery low"
     mode: single
     triggers:
       - trigger: numeric_state
         entity_id: sensor.dip_battery
         below: 20
     actions:
-      - action: notify.mobile_app_max17
+      - action: notify.mobile_app_your_phone
         data:
-          title: "DIP battery at {{ states('sensor.dip_battery') }}%"
-          message: "Time to charge it (lid off, USB-C into the holder) or swap the cell."
+          title: "DIP battery at {{ states('sensor.dip_battery') | round(0) }}%"
+          message: "Time to charge it: lid off, USB-C into the battery holder."

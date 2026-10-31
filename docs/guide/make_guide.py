@@ -139,8 +139,8 @@ B("An ultrasonic sensor looks down a 3\" PVC pipe standing in the pond and measu
 B("A float switch in the same pipe wakes the sensor the instant the water drops too low.")
 B("A water temperature probe hangs in the pipe.")
 B("Every 20 minutes it wakes, sends its readings to Home Assistant over Wi-Fi, and goes back to sleep. "
-  "Home Assistant graphs the level, sends a phone alert if it gets low, and turns the pond pumps off so they "
-  "don't run dry.")
+  "Home Assistant graphs the level, turns off one pump when the water drops 3\", and turns off all the pumps "
+  "with an urgent phone alert when the water drops below the float, so they don't run dry.")
 B("It runs on one rechargeable 18650 battery for months.")
 BREAK()
 
@@ -183,7 +183,7 @@ P("Lay everything out and check it off before you start.")
 TABLE([["Part", "How many", "Notes"],
        ["ESP32-C3 SuperMini board", "1", "The small black board with a USB-C socket. This is the brain."],
        ["18650 battery holder board + 18650 cell", "1 + 1", "Charges through USB-C. Has three 3V and three 5V output pad pairs."],
-       ["JSN-SR20-Y3.0 ultrasonic sensor board + 2 probes", "1 set", "Blue board; the two round black probes plug into it."],
+       ["JSN-SR20 dual-probe ultrasonic sensor (sold as JSN-SR20-Y1) + 2 probes", "1 set", "Blue board; the two round black probes plug into it."],
        ["Float switch (vertical, M10 stem)", "1", "Two yellow wires, either way round."],
        ["DS18B20 waterproof temperature probe", "1", "Steel tip on a black cable, red / black / yellow wires. Comes with a 4.7k resistor."],
        ["4.7k resistor", "1", "Came with the temperature probe."],
@@ -195,6 +195,7 @@ TABLE([["Part", "How many", "Notes"],
        ["M2.5 x 6 screws", "5", "4 for the sensor board, 1 for the SuperMini clamp."],
        ["Screws for the battery holder", "4", "M3 x 6, or the ones that came with the holder."],
        ["M4 screws, stainless", "2", "Float bracket to the pipe."],
+       ["Wood screws, stainless", "2", "Hang the box on the post through its top tab."],
        ["Short stainless screw", "1", "Locks the pipe cap to the pipe."],
        ["3\" PVC pipe, about 30\" long", "1", "89 mm outside, 76 mm inside."],
        ["Cinder block + a bag of pea gravel", "1", "Holds the pipe upright in the pond."]],
@@ -217,7 +218,7 @@ H("3. Printing the case")
 P("All the printed parts are in the case/out folder of the project as STL files. PETG or ASA is best outdoors; "
   "PLA goes soft in the summer sun.")
 TABLE([["File", "What it is", "How to print"],
-       ["box.stl", "The electronics box that mounts on the post", "As it comes, back plate down"],
+       ["box.stl", "The electronics box that hangs on the post", "As it comes, back plate down, no supports"],
        ["box_lid.stl", "The lid, with DIP lettering", "As it comes (already flipped)"],
        ["esp_clamp.stl", "Small tab that holds the SuperMini down", "Flat"],
        ["gasket.stl", "Rubber-like seal for the lid", "95A TPU, flat, 100% infill (or use 1.5 mm foam cord instead)"],
@@ -266,7 +267,8 @@ STEP(2, "Set an insert on top of a hole, narrow end down.")
 STEP(3, "Touch the hot soldering iron (a spare tip if you have one) into the insert and let it sink straight down slowly. Don't push hard. Stop when it's flush with the surface.")
 STEP(4, "While it's still soft, press it flat with something metal. Let it cool.")
 H("Cable glands", 2)
-P("Screw a PG7 gland into each of the 3 holes in the bottom end of the box, with its nut inside. Leave the domed caps loose for now: cables go through later.")
+P("Screw a PG7 gland into each of the 3 holes in the bottom end of the box, with its lock nut inside. The nuts just fit "
+  "side by side: turn each one by hand, then snug it with pliers. Leave the domed caps loose for now: cables go through later.")
 IMG("r_box_filled.png", 6.4, "How it all goes together inside the box (battery holder, sensor board and SuperMini), and the 3 gland holes in the bottom end")
 H("Gasket", 2)
 P("Press the TPU gasket into the groove around the rim of the box (or lay 1.5 mm foam cord in the groove).")
@@ -383,22 +385,31 @@ STEP(1, "Copy firmware/secrets.example.yaml to secrets.yaml and fill in the Wi-F
 STEP(2, "Connect the SuperMini to the computer with a USB-C cable (battery out).")
 STEP(3, "Run: esphome run firmware/dip.yaml   (or use the ESPHome Builder app in Home Assistant).")
 STEP(4, "If the board isn't found, hold the BOOT button, tap RESET, then let go of BOOT, and try again.")
-P("After this first time, updates go over Wi-Fi: turn on \"DIP stay awake\" in Home Assistant so it doesn't fall asleep during the update.")
+P("After this first time, updates go over Wi-Fi. DIP sleeps most of the time, so first turn on \"DIP stay awake\" in "
+  "Home Assistant and wait for its next wake (up to 20 minutes): it sees the switch and stays on. Turn the switch "
+  "off when you're done. Left on, it drains the battery in a day or two.")
 H("12b. Add it to Home Assistant", 2)
 STEP(1, "Home Assistant usually finds DIP by itself: Settings > Devices & services, then Configure on the ESPHome device. Enter the API key.")
-STEP(2, "Install the package (ha/dip_package.yaml) into Home Assistant's packages folder. Check the pump switch names at the top of the file match your pond pump plug.")
-STEP(3, "Restart Home Assistant.")
+STEP(2, "Copy ha/dip_package.yaml into Home Assistant's packages folder. The steps at the top of the file show what to change: "
+        "your two pump switches (the one that stops first, at 3\" down, and the one that stops at the float) and your phone.")
+STEP(3, "Check the configuration (Developer tools > YAML > Check configuration), then restart Home Assistant.")
 H("12c. Calibrate", 2)
-P("With the pond full, read \"Distance to water\" and type that number into \"Pond full distance\". From then on, the pond level shows as inches below full.")
+STEP(1, "Level: with the pond full, read DIP's \"Distance to water\" and type that number into \"Pond full distance\". "
+        "From then on \"Pond level below full\" shows how many inches the water has dropped.")
+STEP(2, "Battery: measure the cell with the multimeter and compare it with DIP's \"Battery voltage\". If they're more than "
+        "about 0.03 V apart, multiply the multiply: number under the battery sensor in dip.yaml by (meter reading / DIP's reading) "
+        "and load the firmware again. A full cell then shows 100 %.")
 
 # ================================================================ 13 install
 H("13. Install at the pond")
 STEP(1, "Drill 3-4 holes of 1/4\" around the bottom 2-3\" of the PVC pipe so water flows in and out, and one 1/8\" vent hole near the top.")
-STEP(2, "Decide how low is \"too low\". Screw the float bracket inside the pipe at that height with the 2 M4 screws through the pipe wall (drill the pipe first).")
+STEP(2, "Decide how low is \"too low\": below this the pumps all shut off. 6-8\" below the full level suits most ponds. "
+        "Screw the float bracket inside the pipe at that height with the 2 M4 screws through the pipe wall (drill the pipe first).")
 STEP(3, "Hang the temperature probe inside the pipe near the bottom.")
 STEP(4, "Stand the pipe in the cinder block's hole in the pond. Pack pea gravel around it, checking it's straight up and down as you go.")
 STEP(5, "Slide the pipe cap on, slot pointing toward the post. Pilot-drill the PVC through the hole in the cap's skirt and fit the short stainless screw so it can't turn or lift.")
-STEP(6, "Mount the box on the post with the glands at the bottom. Run the cables along the back of the coping, under the net.")
+STEP(6, "Hang the box on the post, glands at the bottom, with 2 stainless wood screws through the tab at the top. "
+        "Run the cables along the back of the coping, under the net.")
 NOTE("Cables come out of the cap sideways and go into the box from below, so rain runs off them instead of into anything.", "Why this way: ")
 
 # ================================================================ 14 final checks
@@ -406,7 +417,8 @@ H("14. Final checks and troubleshooting")
 H("Once it's installed", 2)
 B("\"Distance to water\" and the pond level look right, and match your calibration.")
 B("\"Water temperature\" reads a sensible number.")
-B("Lift the float with a stick (or lower the water a little): \"Float switch low\" turns on within seconds and you get the alert. Let it go and it clears.")
+B("Push the float down with a stick and hold it for a minute: \"Float switch low\" turns on within seconds, the pumps turn off and you get the alert. "
+  "Let it go: the float clears, and the pumps come back on by themselves (the last one after 10 minutes, the first one at its next reading).")
 B("\"Battery\" shows a percentage. Check it again in a week to see how fast it drops.")
 H("If something's wrong", 2)
 TABLE([["What you see", "Likely cause and fix"],
