@@ -20,6 +20,8 @@ level and temperature, and shuts the pond pumps off before they can run dry.
 **The full build, step by step, with pictures:** [docs/DIP-assembly-guide.pdf](docs/DIP-assembly-guide.pdf) (Word version: [docx](docs/DIP-assembly-guide.docx)).
 No electronics experience needed; you test as you go.
 
+**Print files on MakerWorld:** [DIP pond sensor](https://makerworld.com/en/models/3526344-dip-pond-sensor#profileId-4031430) (3MF with every plate and print profile).
+
 ## Parts
 
 | Part | Notes |
