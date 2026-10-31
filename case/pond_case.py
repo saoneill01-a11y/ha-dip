@@ -1,5 +1,5 @@
 """
-DIP (Depth In Pond) - 3D-printed parts (draft v0.2: box stands upright, glands in the short bottom end,
+DIP (Depth In Pond) - 3D-printed parts (draft v0.3: box stands upright, glands in the short bottom end,
 no charge-port or button holes; charge with the lid off or take the cell out).
 
 Run:  python3 pond_case.py        (needs: pip install manifold3d numpy)
@@ -45,7 +45,9 @@ PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
 PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
-SENSOR_BOARD = (41.0, 12.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
+SENSOR_BOARD = (48.0, 14.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
+# v0.3 (Oct 31, 2026): moved 7 mm right (against the right wall) and 2 mm up so its wire plugs clear the battery
+# holder's lower pad. It can't go higher: the SuperMini's screw post is 0.8 mm above its top edge.
 # The sensor board screws down onto 4 standoffs (its parts side faces the back plate, so 7 mm clears its button and
 # chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
 SB_HOLE_INSET = 3.0
@@ -60,15 +62,20 @@ SM_LIP_OUT = 2.5      # each lip leaves the back wall at board-top height and sl
 SM_POST_R, SM_PILOT_D, SM_TAB_T, SM_TAB_W, SM_TAB_OVER = 3.4, 2.2, 2.0, 12.0, 1.8
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
-# cable glands (PG7: 12.5 mm hole) in the bottom end, centred on the wall height
-GLANDS_X = (IW / 2 - 17.0, IW / 2, IW / 2 + 17.0)
-GLAND_D, GLAND_Z = 12.6, FLOOR + IH / 2
+# cable glands (PG7: 12.5 mm hole) in the bottom end. v0.3: 22 mm apart (were 17) so the 19.5 mm lock nuts
+# (point to point) can turn, and 4 mm nearer the back plate so the nuts pass under the short bottom lid posts.
+GLAND_PITCH = 22.0
+GLANDS_X = (IW / 2 - GLAND_PITCH, IW / 2, IW / 2 + GLAND_PITCH)
+GLAND_D, GLAND_Z = 12.6, FLOOR + 16.0
 VENT_D, VENT_X, VENT_Z = 2.0, 10.5, FLOOR + IH - 7.0   # tiny breather in the bottom end
 
 # lid screws: M3 heat-set inserts (same as BLIPR) in 8 mm corner columns, given by their inside-corner (x, y)
 COL = 8.0
 INSERT_D, INSERT_DEPTH, SCREW_CLEAR = 4.1, 7.5, 3.4
 COLS = [(0, 0), (IW - COL, 0), (0, ID - COL), (IW - COL, ID - COL)]   # four corners only
+# v0.3: the two bottom columns stop short so the outer gland nuts fit under them. Their undersides slope up at
+# 45 degrees away from the side wall (printable without supports): the lowest point, at the wall, is SHORT_COL_Z.
+SHORT_COL_Z = FLOOR + 24.6
 # two ribs under the lid keep it flat between the corner screws, so the gasket is squeezed all the way round
 RIB_W, RIB_H = 1.8, 5.0
 RIBS_X = (IW * 0.30, IW * 0.70)     # run up the box (inside X); clear of the battery (9 mm below) and the plug
@@ -252,6 +259,16 @@ def box():
     adds.append(prism(inner.offset(0.5, mf.JoinType.Round) - cavity, FLOOR - 0.2, H))   # 0.5 mm into the walls so they fuse
     for cx, cy in COLS:
         cuts.append(cyl(INSERT_DEPTH + 0.5, INSERT_D / 2, *col_hole(cx, cy), H - INSERT_DEPTH))
+    # bottom columns: cut away everything under a 45 degree slope rising from the side wall (see SHORT_COL_Z)
+    reach = COL + FILLET + 1.0
+    for left in (True, False):
+        wx = X(0) if left else X(IW)                 # the side wall's inside face
+        s = 1 if left else -1
+        pts = [(wx - s * 1.0, FLOOR - 1.0), (wx + s * reach, FLOOR - 1.0),
+               (wx + s * reach, SHORT_COL_Z + reach), (wx - s * 1.0, SHORT_COL_Z - 1.0)]
+        under = mf.CrossSection([pts if left else pts[::-1]])          # counter-clockwise either side
+        wedge = under.extrude(COL + FILLET + 1.0).rotate([90, 0, 0]).translate([0, Y(COL + FILLET + 1.0), 0])
+        cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR - 1.0, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H))
     # battery-holder pads
     for px in HOLD_COLS_X:
         for py in HOLD_ROWS_Y:
