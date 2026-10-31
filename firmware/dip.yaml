@@ -133,6 +133,8 @@ sensor:
     timeout: 3m
     update_interval: never   # the script triggers the readings
     unit_of_measurement: "cm"
+    device_class: distance   # lets HA show it in inches
+    state_class: measurement # keeps long-term history for the month chart
     accuracy_decimals: 1
     filters:
       - multiply: 100        # metres -> cm
@@ -160,6 +162,7 @@ sensor:
     name: "Battery"
     unit_of_measurement: "%"
     device_class: battery
+    state_class: measurement # keeps long-term history for the month chart
     accuracy_decimals: 0
     update_interval: never
     lambda: |-
