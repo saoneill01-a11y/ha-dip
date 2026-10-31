@@ -197,4 +197,12 @@ binary_sensor:
       - script.execute: awake_loop
     on_release:
       - deep_sleep.allow: sleeper
-      - deep_sleep.enter: sleeper
+      - delay: 5s              # a quick off-on tap shouldn't put it to sleep
+      - if:
+          condition:
+            binary_sensor.is_off: stay_awake
+          then:
+            - deep_sleep.enter:  # same 2 min / 20 min choice as a normal reading
+                id: sleeper
+                sleep_duration: !lambda |-
+                  return id(float_low).state ? ${low_water_sleep_ms} : ${normal_sleep_ms};
