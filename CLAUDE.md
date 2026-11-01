@@ -19,7 +19,7 @@ money or can't be undone.
 - Printing rules: no square vertical corners (1 mm rounds outside, 1 mm fillets inside: `round2d` / `FILLET`),
   and avoid supports when there's a better way (45-degree overhangs, short bridges). Supports are fine where a part
   really needs them; just say so. Check new parts for both.
-- STLs are written watertight (`write_stl` merges near-duplicate points and drops zero-area slivers).
+- STLs are written watertight (`write_stl` merges points that land on the same 32-bit spot and drops only the triangles that collapse; never drop other slivers, it opens edges). Check new parts for open edges before pushing.
 - After changing the case, rerun `case/pond_case.py`, `case/previews.py`, then in `docs/guide/`: `make_renders.py`,
   `make_diagrams.py` and `make_guide.py` (copy `case/out/preview_front.png`, `preview_box.png` and
   `preview_esp_mount.png` to `docs/guide/r_front.png`, `r_box_filled.png` and `r_esp_mount.png` first).

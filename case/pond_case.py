@@ -276,7 +276,7 @@ def box():
                (wx + s * reach, SHORT_COL_Z + reach), (wx - s * 1.0, SHORT_COL_Z - 1.0)]
         under = mf.CrossSection([pts if left else pts[::-1]])          # counter-clockwise either side
         wedge = under.extrude(COL + FILLET + 1.0).rotate([90, 0, 0]).translate([0, Y(COL + FILLET + 1.0), 0])
-        keep_round = prism(rrect(IW, ID, R_OUT - WALL).translate([x0, y0]), FLOOR, H)   # leaves the box's rounded inside corner
+        keep_round = prism(rrect(IW - 0.04, ID - 0.04, R_OUT - WALL - 0.02).translate([x0 + 0.02, y0 + 0.02]), FLOOR, H)   # the rounded inside corner; 0.02 mm shy of the walls so no faces touch
         cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H) ^ keep_round)
     # battery-holder platform, its insert and the locating rail
     hx, hy, hw, hd, _ = HOLDER
@@ -458,10 +458,13 @@ def write_stl(m, path):
     mesh = m.simplify(0.0005).to_mesh()               # merges near-duplicate points (0.0005 mm) so the STL is watertight
     v = np.asarray(mesh.vert_properties)[:, :3].astype(np.float32)
     f = np.asarray(mesh.tri_verts)
+    # STL stores 32-bit numbers, so points a hair apart can land on the same spot. Merge those, then drop only the
+    # triangles that collapsed (two corners now the same point). Dropping other thin slivers would leave open edges.
+    v, inv = np.unique(v, axis=0, return_inverse=True)
+    f = inv.reshape(-1)[f]
+    f = f[(f[:, 0] != f[:, 1]) & (f[:, 1] != f[:, 2]) & (f[:, 0] != f[:, 2])]
     tri = v[f]
     n = np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0])
-    keep = np.linalg.norm(n, axis=1) > 1e-9          # drop zero-area slivers left by the booleans
-    tri, n, f = tri[keep], n[keep], f[keep]
     n /= np.linalg.norm(n, axis=1, keepdims=True) + 1e-12
     data = np.zeros(len(f), dtype=np.dtype([("n", "<3f4"), ("v", "<9f4"), ("a", "<u2")]))
     data["n"], data["v"] = n, tri.reshape(-1, 9)
