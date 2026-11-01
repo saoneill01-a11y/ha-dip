@@ -38,7 +38,7 @@ x0, y0 = WALL, WALL                # inside origin
 # platform holds it, and a low rail along its right side stops it turning. Its ends stay open for the wires.
 HOLDER = (1.0, 30.0, 21.2, 76.2, 20.0)   # x, y, width, length, height of the holder
 PLAT_H = 7.0                       # platform top above the floor: room for the 5.7 mm insert under the holder
-PLAT_INSET = 1.0                   # platform is this much smaller than the holder all round
+PLAT_INSET = 1.0                   # platform stops this far short of the holder's ends (wire room)
 RAIL_W, RAIL_H, RAIL_CLR = 1.8, 4.0, 0.4   # locating rail beside the holder, above the platform
 HOLDER_INSERT_D, HOLDER_INSERT_DEPTH = 4.1, 6.0
 
@@ -274,9 +274,10 @@ def box():
         cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR - 1.0, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H))
     # battery-holder platform, its insert and the locating rail
     hx, hy, hw, hd, _ = HOLDER
-    plat = round2d(sq(X(hx + PLAT_INSET), Y(hy + PLAT_INSET), X(hx + hw - PLAT_INSET), Y(hy + hd - PLAT_INSET)))
-    adds.append(prism(plat, FLOOR - 0.2, FLOOR + PLAT_H))
     rx = X(hx + hw + RAIL_CLR)
+    # v0.4: the platform runs from the side wall to the rail's outer edge, so there are no thin slots to print
+    plat = round2d(sq(X(0) - 0.5, Y(hy + PLAT_INSET), rx + RAIL_W, Y(hy + hd - PLAT_INSET)))
+    adds.append(prism(plat, FLOOR - 0.2, FLOOR + PLAT_H))
     adds.append(prism(round2d(sq(rx, Y(hy + 8.0), rx + RAIL_W, Y(hy + hd - 8.0)), 0.8), FLOOR - 0.2, FLOOR + PLAT_H + RAIL_H))
     cuts.append(cyl(HOLDER_INSERT_DEPTH + 0.5, HOLDER_INSERT_D / 2, X(hx + hw / 2), Y(hy + hd / 2), FLOOR + PLAT_H - HOLDER_INSERT_DEPTH))
     # board cradles
