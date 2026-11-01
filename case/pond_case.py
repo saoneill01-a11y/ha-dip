@@ -124,6 +124,11 @@ FLOAT_OFFSET = 19.0      # stem centre from the pipe wall (float body is about 2
 FB_W, FB_H, FB_T = 32.0, 42.0, 4.0
 SHELF_T = 5.0
 M4_CLEAR = 4.4
+# outside float bracket: hugs the OUTSIDE of the pipe, with two upright slots so the float height adjusts by 2"
+# (M4 screws through the slots and the pipe wall, washers outside, nuts inside). The slots sit either side of the
+# float, so a screwdriver reaches them past it.
+FBO_W, FBO_H, FBO_ADJ = 46.0, 78.0, 50.8
+FBO_SLOT_X, FBO_SLOT_Z0 = 16.0, 8.0     # slot centres from the middle; bottom of the slot travel
 
 
 def cube(x0_, y0_, z0_, x1, y1, z1):
@@ -433,6 +438,21 @@ def float_bracket():
     return m.rotate([0, 90, 0]).translate([0, r, FB_W / 2])
 
 
+def float_bracket_outside():
+    """Curved back fits the pipe's outside wall; the float hangs from the shelf, 19 mm out from the pipe."""
+    r = PIPE_OD / 2 + 0.3
+    t = FB_T
+    back = (cyl(FBO_H, r + t) - cyl(FBO_H + 2, r, 0, 0, -1)) ^ cube(-FBO_W / 2, -r - t - 1, 0, FBO_W / 2, -r + 12, FBO_H)
+    shelf = cube(-FB_W / 2, -r - FLOAT_OFFSET - 13, FBO_H - SHELF_T, FB_W / 2, -r - 1, FBO_H) - cyl(FBO_H + 2, r, 0, 0, -1)
+    m = back + shelf
+    m = m - cyl(SHELF_T + 2, FLOAT_STEM_HOLE / 2, 0, -r - FLOAT_OFFSET, FBO_H - SHELF_T - 1)
+    for sx in (-FBO_SLOT_X, FBO_SLOT_X):
+        a = cyl(30, M4_CLEAR / 2, 0, 0, 0).rotate([90, 0, 0]).translate([sx, -r + 15, FBO_SLOT_Z0])
+        b = cyl(30, M4_CLEAR / 2, 0, 0, 0).rotate([90, 0, 0]).translate([sx, -r + 15, FBO_SLOT_Z0 + FBO_ADJ])
+        m = m - mf.Manifold.hull(a + b)
+    return m.rotate([0, 90, 0]).translate([0, r + t, FBO_W / 2])
+
+
 def write_stl(m, path):
     mesh = m.simplify(0.0005).to_mesh()               # merges near-duplicate points (0.0005 mm) so the STL is watertight
     v = np.asarray(mesh.vert_properties)[:, :3].astype(np.float32)
@@ -451,7 +471,7 @@ def write_stl(m, path):
     return len(f)
 
 
-PARTS = {"box": box, "box_lid": box_lid, "gasket": gasket, "esp_clamp": esp_clamp, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket}
+PARTS = {"box": box, "box_lid": box_lid, "gasket": gasket, "esp_clamp": esp_clamp, "pipe_cap": pipe_cap, "pipe_cap_top": pipe_cap_top, "float_bracket": float_bracket, "float_bracket_outside": float_bracket_outside}
 
 if __name__ == "__main__":
     out = os.path.join(os.path.dirname(os.path.abspath(__file__)), "out")

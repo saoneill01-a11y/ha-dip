@@ -224,7 +224,8 @@ TABLE([["File", "What it is", "How to print"],
        ["gasket.stl", "Rubber-like seal for the lid", "95A TPU, flat, 100% infill (or use 1.5 mm foam cord instead)"],
        ["pipe_cap.stl", "Sits on top of the PVC pipe and holds the probes", "Upside down (rim on the bed); supports only under the probe band"],
        ["pipe_cap_top.stl", "Flat lid for the pipe cap", "Flat"],
-       ["float_bracket.stl", "Holds the float switch inside the pipe", "As it comes (lying on its side)"]],
+       ["float_bracket.stl", "Holds the float switch inside the pipe", "As it comes (lying on its side)"],
+       ["float_bracket_outside.stl", "Or: holds the float OUTSIDE the pipe, slots adjust its height by 2\"", "As it comes (lying on its side)"]],
       [1.6, 2.6, 2.4])
 IMG("r_box.png", 6.4, "The box")
 IMG("r_box_lid.png", 6.4, "The lid: outside and inside")

@@ -94,6 +94,7 @@ PETG or ASA outdoors; PLA goes soft in the sun.
 | `pipe_cap.stl` | Slides over the pipe and holds both probes; a slot in the rim lets the cables out sideways | upside down (rim on the bed); supports only under the probe band |
 | `pipe_cap_top.stl` | Flat lid for the pipe cap, 3 screws | flat |
 | `float_bracket.stl` | Holds the float switch inside the pipe, 2 screws through the pipe wall | as is (lying on its side) |
+| `float_bracket_outside.stl` | Or this one: holds the float switch OUTSIDE the pipe. Two upright slots give 2" of height adjustment (M4 screws through the pipe wall, washers outside, nuts inside) | as is (lying on its side) |
 
 ![The box, lid off](case/out/preview_box.png)
 
