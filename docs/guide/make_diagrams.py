@@ -48,43 +48,39 @@ def save(f, name):
 
 # ---------------------------------------------------------------- 1. the whole thing
 def overview():
-    f, ax = fig(13, 8.6)
-    # battery holder
-    box(ax, 2, 44, 26, 34, "Battery holder", "switch set to stay on", fc="#f7efe2", ec="#9a6b2f")
-    for i, (lab, y) in enumerate([("3V pair 1  +", 70), ("3V pair 1  -", 66), ("3V pair 2  +", 60), ("3V pair 2  -", 56), ("3V pair 3  +", 50), ("3V pair 3  -", 46.5)]):
-        ax.text(27, y, lab, ha="right", va="center", fontsize=FS - 1)
-    ax.text(17, 40, "+ battery contact", ha="left", va="center", fontsize=FS - 1)
-    # SuperMini
-    box(ax, 46, 40, 24, 38, "ESP32-C3 SuperMini", "the brain")
-    for lab, y in [("3.3", 70), ("G", 66), ("4", 58)]:
-        ax.text(47.5, y, lab, ha="left", va="center", fontsize=FS, weight="bold")
-    for lab, y in [("6", 70), ("7", 66), ("5", 54), ("3", 50)]:
+    f, ax = fig(13, 9.6)
+    # battery holder: a plain cradle, two wires to the XIAO's BAT pads
+    box(ax, 2, 50, 24, 22, "18650 holder", "plain, red and black wires", fc="#f7efe2", ec="#9a6b2f")
+    # XIAO (front view, USB-C at the top)
+    box(ax, 44, 36, 26, 42, "XIAO ESP32-C6", "the brain, charges the cell")
+    for lab, y in [("D0", 68), ("D1", 64), ("D3", 56), ("D4", 52), ("D5", 48)]:
+        ax.text(45.5, y, lab, ha="left", va="center", fontsize=FS, weight="bold")
+    for lab, y in [("GND", 64), ("3V3", 60)]:
         ax.text(68.5, y, lab, ha="right", va="center", fontsize=FS, weight="bold")
+    ax.text(57, 39.5, "BAT -   BAT +\n(pads underneath)", ha="center", va="bottom", fontsize=FS - 2, color="#555")
+    # battery wires to the BAT pads
+    wire(ax, [(26, 62), (34, 62), (34, 30), (60, 30), (60, 38)], RED); ax.text(27, 63.2, "red", fontsize=FS - 2, color=RED)
+    wire(ax, [(26, 58), (31, 58), (31, 27), (54, 27), (54, 38)], BLK); ax.text(27, 55, "black", fontsize=FS - 2)
+    # battery divider: drawn on its own picture
+    ax.text(14, 44, "D0: battery reading,\n2 x 100k to BAT + and BAT -\n(see its own picture)", ha="center", va="top", fontsize=FS - 2, color=PUR)
     # sensor board
     box(ax, 92, 56, 34, 22, "Ultrasonic sensor board", "JSN-SR20, MODE pad left empty")
     for lab, y in [("5V", 68), ("Trig", 64.5), ("Echo", 61), ("GND", 57.5)]:
         ax.text(93.5, y, lab, ha="left", va="center", fontsize=FS - 1)
     ax.text(124, 62, "2 probes plug\ninto the white\nsockets", ha="right", va="center", fontsize=FS - 2, color="#555")
-    # power to SuperMini
-    wire(ax, [(28, 70), (47, 70)], RED); wire(ax, [(28, 66), (47, 66)], BLK)
-    # sensor power from pair 2
-    wire(ax, [(28, 60), (36, 60), (36, 84), (88, 84), (88, 68), (93, 68)], RED)
-    wire(ax, [(28, 56), (38, 56), (38, 82), (86, 82), (86, 57.5), (93, 57.5)], BLK)
+    # sensor power from 3V3 / GND
+    wire(ax, [(69, 60), (84, 60), (84, 84), (88, 84), (88, 68), (93, 68)], RED)
+    wire(ax, [(69, 64), (82, 64), (82, 82), (86, 82), (86, 57.5), (93, 57.5)], BLK)
     # trig / echo
-    wire(ax, [(69, 70), (78, 70), (78, 64.5), (93, 64.5)], BLU); ax.text(80, 65.5, "Trig", fontsize=FS - 2, color=BLU)
-    wire(ax, [(69, 66), (76, 66), (76, 61), (93, 61)], GRN); ax.text(80, 58.2, "Echo", fontsize=FS - 2, color=GRN)
-    # battery divider
-    wire(ax, [(15, 43), (15, 34), (23, 34)], PUR); resistor(ax, 26, 34, True, "100k (A)")
-    wire(ax, [(29, 34), (40, 34), (40, 58), (46.5, 58)], PUR); dot(ax, 40, 34, PUR)
-    wire(ax, [(40, 34), (40, 26)], PUR); resistor(ax, 40, 23, False, "100k (B)")
-    wire(ax, [(40, 20), (40, 14), (50, 14)], BLK); ax.text(51, 14, "to G", ha="left", va="center", fontsize=FS - 1)
+    wire(ax, [(45, 52), (38, 52)], BLU); wire(ax, [(38, 52), (38, 88), (90, 88), (90, 64.5), (93, 64.5)], BLU); ax.text(60, 85.5, "Trig (D4)", fontsize=FS - 2, color=BLU)
+    wire(ax, [(45, 48), (36, 48), (36, 90), (91.5, 90), (91.5, 61), (93, 61)], GRN); ax.text(75, 91, "Echo (D5)", fontsize=FS - 2, color=GRN)
     # 4-core cable
     ax.add_patch(FancyBboxPatch((76, 6), 50, 40, boxstyle="round,pad=0.6,rounding_size=1.5", fc="#fafafa", ec=GRY, lw=1.2, ls="--"))
     ax.text(101, 44.5, "4-core cable to the pipe cap", ha="center", va="top", fontsize=FS, weight="bold")
-    wire(ax, [(28, 50), (32, 50), (32, 38), (80, 38), (118, 38)], RED); ax.text(119, 38, "1: 3.3V", va="center", fontsize=FS - 1)
-    wire(ax, [(28, 46.5), (30, 46.5), (30, 31), (118, 31)], BLK); ax.text(119, 31, "2: GND", va="center", fontsize=FS - 1)
-    wire(ax, [(69, 54), (74, 54), (74, 24), (118, 24)], YEL); ax.text(119, 24, "3: Temp", va="center", fontsize=FS - 1)
-    wire(ax, [(69, 50), (72, 50), (72, 17), (118, 17)], ORG); ax.text(119, 17, "4: Float", va="center", fontsize=FS - 1)
+    wire(ax, [(69, 60), (74, 60), (74, 38), (118, 38)], RED); ax.text(119, 38, "1: 3.3V", va="center", fontsize=FS - 1)
+    wire(ax, [(69, 64), (72, 64), (72, 31), (118, 31)], BLK); ax.text(119, 31, "2: GND", va="center", fontsize=FS - 1)
+    wire(ax, [(45, 56), (43, 56), (43, 24), (118, 24)], YEL); ax.text(119, 24, "3: Temp (D3)", va="center", fontsize=FS - 1)
+    wire(ax, [(45, 64), (44, 64), (44, 17), (118, 17)], ORG); ax.text(119, 17, "4: Float (D1)", va="center", fontsize=FS - 1)
     # pull-ups at the cable end
     dot(ax, 86, 38, RED); wire(ax, [(86, 38), (86, 34)], RED); resistor(ax, 86, 31, False, ""); ax.text(84, 34.5, "4.7k", ha="right", va="center", fontsize=FS - 1); wire(ax, [(86, 28), (86, 24)], YEL); dot(ax, 86, 24, YEL)
     dot(ax, 100, 38, RED); wire(ax, [(100, 38), (100, 27.5)], RED); resistor(ax, 100, 24.5, False, "100k (C)"); wire(ax, [(100, 21.5), (100, 17)], ORG); dot(ax, 100, 17, ORG)
@@ -92,26 +88,25 @@ def overview():
     save(f, "d_overview.png")
 
 
-# ---------------------------------------------------------------- 2. SuperMini pins (back view, like the photo)
+# ---------------------------------------------------------------- 2. XIAO pins (front view, USB-C at the top)
 def pins():
-    f, ax = fig(10, 6)
-    ax.add_patch(FancyBboxPatch((22, 14), 56, 34, boxstyle="round,pad=0.4,rounding_size=1.2", fc="#1d1d1d", ec="#000"))
-    ax.add_patch(Rectangle((16, 24), 9, 14, fc="#c0c0c0", ec="#777"))
-    ax.text(19, 31, "USB-C", rotation=90, ha="center", va="center", fontsize=FS - 2)
-    ax.text(50, 31, "SuperMini\nBACK (label side)", ha="center", va="center", color="white", fontsize=FS)
-    top = ["5", "6", "7", "8", "9", "10", "20", "21"]
-    bot = ["5V", "G", "3.3", "4", "3", "2", "1", "0"]
-    use = {"5": ("Temp", YEL), "6": ("Trig", BLU), "7": ("Echo", GRN),
-           "G": ("GND", "#9a9a9a"), "3.3": ("3.3V", RED), "4": ("Batt", PUR), "3": ("Float", ORG)}
-    for i in range(8):
-        x = 27 + i * 6.6
-        for lab, y, ty, va in [(top[i], 47, 53, "bottom"), (bot[i], 15, 9, "top")]:
+    f, ax = fig(10, 7)
+    ax.add_patch(FancyBboxPatch((34, 10), 32, 46, boxstyle="round,pad=0.4,rounding_size=1.5", fc="#1d1d1d", ec="#000"))
+    ax.add_patch(Rectangle((44, 52), 12, 7, fc="#c0c0c0", ec="#777")); ax.text(50, 55.5, "USB-C", ha="center", va="center", fontsize=FS - 2)
+    ax.text(50, 33, "XIAO\nESP32-C6\nFRONT\n(metal can side)", ha="center", va="center", color="white", fontsize=FS - 1)
+    left = ["D0", "D1", "D2", "D3", "D4", "D5", "D6"]
+    right = ["5V", "GND", "3V3", "D10", "D9", "D8", "D7"]
+    use = {"D0": ("Batt", PUR), "D1": ("Float", ORG), "D3": ("Temp", YEL), "D4": ("Trig", BLU), "D5": ("Echo", GRN),
+           "GND": ("GND", "#9a9a9a"), "3V3": ("3.3V", RED)}
+    for i in range(7):
+        y = 49 - i * 6
+        for lab, x, tx, ha in [(left[i], 36, 28, "right"), (right[i], 64, 72, "left")]:
             u = use.get(lab)
             ax.add_patch(Circle((x, y), 1.5, fc="#d4a017" if u else "#7a6a3a", ec=u[1] if u else "none", lw=3 if u else 0, zorder=4))
-            ax.text(x, y + (-3.2 if y > 30 else 3.2), lab, ha="center", va="center", color="white", fontsize=FS - 1, weight="bold")
+            ax.text(x + (4.5 if x < 50 else -4.5), y, lab, ha="center", va="center", color="white", fontsize=FS - 2, weight="bold")
             if u:
-                ax.text(x, ty, u[0], ha="center", va=va, fontsize=FS - 1, color=u[1], weight="bold")
-    ax.text(50, 1.5, "Pins you use are ringed in color. Leave the grey ones empty.", ha="center", fontsize=FS - 1, color="#555")
+                ax.text(tx, y, u[0], ha=ha, va="center", fontsize=FS - 1, color=u[1], weight="bold")
+    ax.text(50, 2, "Pins you use are ringed in color. Leave the grey ones empty. The battery goes to the BAT pads underneath.", ha="center", fontsize=FS - 2, color="#555")
     save(f, "d_pins.png")
 
 
@@ -194,7 +189,7 @@ def boxend():
     f, ax = fig(12, 6)
     ax.text(2, 56, "Inside the box: two resistors where the 4-core cable comes in", fontsize=FS, weight="bold")
     ys = {"r": 44, "k": 36, "y": 28, "o": 20}
-    for k, c, lab in [("r", RED, "1: 3.3V  ->  holder 3V pair 3 +"), ("k", BLK, "2: GND  ->  holder 3V pair 3 -"), ("y", YEL, "3: Temp  ->  SuperMini pin 5"), ("o", ORG, "4: Float  ->  SuperMini pin 3")]:
+    for k, c, lab in [("r", RED, "1: 3.3V  ->  XIAO 3V3"), ("k", BLK, "2: GND  ->  XIAO GND"), ("y", YEL, "3: Temp  ->  XIAO D3"), ("o", ORG, "4: Float  ->  XIAO D1")]:
         wire(ax, [(4, ys[k]), (112, ys[k])], c); ax.text(112, ys[k] + 1.5, lab, ha="right", fontsize=FS - 1)
     ax.text(4, 48, "from the gland", fontsize=FS - 2, color="#555")
     dot(ax, 40, 44, RED); wire(ax, [(40, 44), (40, 40)], RED); resistor(ax, 40, 34, False, ""); ax.text(37, 34, "4.7k", ha="right", va="center", fontsize=FS - 1); wire(ax, [(40, 31), (40, 28)], YEL); dot(ax, 40, 28, YEL)
@@ -203,21 +198,23 @@ def boxend():
     save(f, "d_boxend.png")
 
 
-# ---------------------------------------------------------------- 8. battery divider at the SuperMini
+# ---------------------------------------------------------------- 8. battery divider on the XIAO's underside
 def divider():
-    f, ax = fig(11, 6)
-    ax.text(2, 56, "Battery reading: two 100k resistors, (A) and (B)", fontsize=FS, weight="bold")
-    for i, lab in enumerate(["5V", "G", "3.3", "4", "3"]):
-        x = 20 + i * 12
-        ax.add_patch(Circle((x, 18), 2.2, fc="#d4a017", ec="#7a5a00", zorder=4)); ax.text(x, 12, lab, ha="center", fontsize=FS, weight="bold")
-    ax.text(68, 6, "SuperMini, bottom row of pins", ha="center", fontsize=FS - 2, color="#555")
-    # B: G to 4 arching over 3.3
-    wire(ax, [(32, 18), (32, 30), (41, 30)], PUR); resistor(ax, 44, 30, True, "100k (B)"); wire(ax, [(47, 30), (56, 30), (56, 18)], PUR)
-    ax.text(30, 40, "sleeve the legs: they pass over 3.3", ha="center", fontsize=FS - 2, color="#555")
-    # A: from 4 up to the battery
-    wire(ax, [(56, 30), (56, 44), (73, 44)], PUR); resistor(ax, 76, 44, True, "100k (A)"); wire(ax, [(79, 44), (104, 44)], PUR)
-    ax.text(104, 46, "wire to the holder's\n+ battery contact", ha="right", va="bottom", fontsize=FS - 1)
-    ax.text(58, 24, "both resistors share hole 4", fontsize=FS - 2, color="#555")
+    f, ax = fig(11, 7)
+    ax.text(2, 66, "Battery reading: two 100k resistors on the XIAO's underside", fontsize=FS, weight="bold")
+    ax.add_patch(FancyBboxPatch((30, 8), 32, 46, boxstyle="round,pad=0.4,rounding_size=1.5", fc="#1d1d1d", ec="#000"))
+    ax.add_patch(Rectangle((40, 50), 12, 7, fc="#c0c0c0", ec="#777"))
+    ax.text(46, 30, "XIAO\nBACK", ha="center", va="center", color="white", fontsize=FS)
+    ax.add_patch(Circle((60, 47), 1.6, fc="#d4a017", ec=PUR, lw=3, zorder=4)); ax.text(56, 47, "D0", ha="center", va="center", color="white", fontsize=FS - 1, weight="bold")
+    for x, lab in [(42, "BAT -"), (50, "BAT +")]:
+        ax.add_patch(Rectangle((x - 1.6, 13), 3.2, 6, fc="#d4a017", ec="#7a5a00", zorder=4)); ax.text(x, 22, lab, ha="center", color="white", fontsize=FS - 2, weight="bold")
+    wire(ax, [(50, 13), (50, 4), (16, 4)], RED); ax.text(15, 4, "holder red", ha="right", va="center", fontsize=FS - 1, color=RED)
+    wire(ax, [(42, 13), (42, 7), (16, 7)], BLK); ax.text(15, 7.6, "holder black", ha="right", va="center", fontsize=FS - 1)
+    # A: BAT+ to D0 (outside the board edge), B: D0 to BAT-
+    wire(ax, [(51.6, 16), (68, 16), (68, 28)], PUR); resistor(ax, 68, 31, False, "100k (A)"); wire(ax, [(68, 34), (68, 47), (61.6, 47)], PUR)
+    wire(ax, [(60, 45.4), (60, 40), (24, 40), (24, 28)], PUR); resistor(ax, 24, 24, False, ""); ax.text(21, 24, "100k (B)", ha="right", va="center", fontsize=FS - 1)
+    wire(ax, [(24, 21), (24, 16), (40.4, 16)], PUR)
+    ax.text(46, 61, "(A) from BAT + to D0, (B) from D0 to BAT -. Sleeve the legs with heat shrink.", ha="center", fontsize=FS - 2, color="#555")
     save(f, "d_divider.png")
 
 

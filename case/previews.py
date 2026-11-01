@@ -11,18 +11,12 @@ def dummy(name, m):
 
 
 X, Y, F = P.X, P.Y, P.FLOOR
-# battery holder stand-in: board 1.6 thick on the pads (port end at the top), an 18650 (18.5 dia) along it
-hx0, hx1 = X(0.4), X(P.HOLD_COLS_X[1] + 4.5)
-hy0, hy1 = Y(P.HOLD_ROWS_Y[0] - 13.0), Y(P.HOLD_ROWS_Y[1] + 6.3)
-holder = P.cube(hx0, hy0, P.PAD_TOP, hx1, hy1, P.PAD_TOP + 1.6)
-cell = mf.Manifold.cylinder(65.0, 9.25, 9.25, 48).rotate([-90, 0, 0]).translate([(hx0 + hx1) / 2, Y(P.HOLD_ROWS_Y[0]), P.PAD_TOP + 1.6 + 9.6])
-port = P.cube(hx1 - 7.0, Y(P.PORT_Y) - 4.5, P.PAD_TOP - 1.6, hx1 + 0.3, Y(P.PORT_Y) + 4.5, P.PAD_TOP + 1.6)
-holder_p = dummy("holder", holder + cell + port)
-# a USB-C plug and cable plugged in from the right (shows the clearance with the lid off)
-plug = (P.cube(hx1 + 0.3, Y(P.PORT_Y) - 4.2, P.PAD_TOP - 1.4, hx1 + 22, Y(P.PORT_Y) + 4.2, P.PAD_TOP + 5.0)
-        + mf.Manifold.cylinder(14, 2.2, 2.2, 24).rotate([0, 90, 0]).translate([hx1 + 22, Y(P.PORT_Y), P.PAD_TOP + 1.8])
-        + mf.Manifold.cylinder(30, 2.2, 2.2, 24).translate([hx1 + 36, Y(P.PORT_Y), P.PAD_TOP + 1.8]))
-plug_p = dummy("plug", plug)
+# battery holder stand-in: the plain holder on its platform, an 18650 in it
+hx, hy, hw, hd, hh = P.HOLDER
+z0 = F + P.PLAT_H
+holder = P.cube(X(hx), Y(hy), z0, X(hx + hw), Y(hy + hd), z0 + hh) - P.cube(X(hx + 1.2), Y(hy + 1.5), z0 + 1.2, X(hx + hw - 1.2), Y(hy + hd - 1.5), z0 + hh + 1)
+cell = mf.Manifold.cylinder(65.0, 9.25, 9.25, 48).rotate([-90, 0, 0]).translate([X(hx + hw / 2), Y(hy + 5.6), z0 + 1.2 + 9.25])
+holder_p = dummy("holder", holder + cell)
 sx, sy, sw, sd, sz = P.SENSOR_BOARD
 bz = F + sz + 1.6                       # top of the sensor board (its plug side faces the lid)
 plugs = None
@@ -36,21 +30,27 @@ hx = X(sx) + 1.5                        # the 4 jumper wires on the header, stan
 plugs = plugs + P.cube(hx - 1.3, Y(sy + sd / 2) - 5.2, bz, hx + 1.3, Y(sy + sd / 2) + 5.2, bz + 16.0)
 sensor_p = dummy("sensor", P.cube(X(sx), Y(sy), F + sz, X(sx + sw), Y(sy + sd), F + sz + 1.6) + plugs)
 mx, my, mw, md, mz = P.SUPERMINI
-mini_p = dummy("mini", P.cube(X(mx), Y(my), F + mz, X(mx + mw), Y(my + md), F + mz + 1.6)
-               + P.cube(X(mx + 4.6), Y(my + md - 7), F + mz + 1.6, X(mx + 13.4), Y(my + md + 0.8), F + mz + 4.8))
+zt = F + mz + P.XIAO_PCB
+mini_p = dummy("mini", P.cube(X(mx), Y(my), F + mz, X(mx + mw), Y(my + md), zt)
+               + P.cube(X(mx + 1.2), Y(my + P.XIAO_CAN_IN), zt, X(mx + mw - 1.2), Y(my + md - 7.5), zt + P.XIAO_CAN)
+               + P.cube(X(mx + 4.4), Y(my + md - 7.3), zt, X(mx + 13.4), Y(my + md + 1.3), zt + 3.2))
+# the short USB-C cable left plugged in, looping up to the clip
+cy0 = Y(my + md + 1.3)
+plug_p = dummy("plug", P.cube(X(mx + 4.6), cy0, zt - 0.2, X(mx + 13.2), cy0 + 16, zt + 3.4)
+               + mf.Manifold.cylinder(30, 1.9, 1.9, 16).rotate([-90, 0, 0]).translate([X(mx + 8.9), cy0 + 16, zt + 1.6]))
 # the clamp tab in place over the board's far end
 tab_y0 = Y(my) - P.SM_CLR - P.SM_POST_R - P.SM_POST_R - 1.5
 clamp_p = None
 
-_c = P.esp_clamp().translate([X(mx + mw / 2) - P.SM_TAB_W / 2, tab_y0, F + mz + 1.6])
+_c = P.esp_clamp().translate([X(mx + mw / 2) - P.SM_TAB_W / 2, tab_y0, zt + P.XIAO_CAN])
 clamp_p = dummy("clamp", _c)
 grey, blue, green, amber, dark = (0.70, 0.73, 0.78), (0.30, 0.50, 0.85), (0.35, 0.65, 0.40), (0.85, 0.62, 0.25), (0.25, 0.25, 0.28)
 views([f"{d}/box.stl", mini_p, clamp_p], f"{d}/preview_esp_mount.png",
-      [(55, -25, "ESP32 SuperMini: USB end under 2 lips, tab + 1 screw at the other end")],
+      [(55, -25, "XIAO C6: corner stops at the USB end, tab + 1 screw on the shield can")],
       colors=[(0.70, 0.73, 0.78), (0.35, 0.65, 0.40), (0.85, 0.62, 0.25)], size=(7, 6.4), )
-views([f"{d}/box.stl", holder_p, sensor_p, mini_p, plug_p], f"{d}/preview_box.png",
-      [(60, -30, "Box upright, lid off (USB-C cable plugged in)"), (-20, -35, "Bottom end: 3 cable glands")],
-      colors=[grey, amber, blue, green, dark], size=(12, 6.4))
+views([f"{d}/box.stl", holder_p, sensor_p, mini_p, clamp_p, plug_p], f"{d}/preview_box.png",
+      [(60, -30, "Box upright, lid off"), (-20, -35, "Bottom end: 3 cable glands")],
+      colors=[grey, dark, blue, green, amber, dark], size=(12, 6.4))
 views([f"{d}/box_lid.stl", f"{d}/gasket.stl"], f"{d}/preview_lid.png",
       [(-45, -60, "Lid (top), washer seats round the 4 screws"), (40, -60, "Lid underside as printed: 2 stiffening ribs, drip lip + TPU gasket")], colors=[grey, (0.2, 0.2, 0.22)], offsets=[None, (100, 0, 0)], size=(12, 4.8))
 # the box closed up as it hangs on the post (lid turned back over), to show the lettering

@@ -1,10 +1,10 @@
 """
-DIP (Depth In Pond) - 3D-printed parts (draft v0.3: box stands upright, glands in the short bottom end,
-no charge-port or button holes; charge with the lid off or take the cell out).
+DIP (Depth In Pond) - 3D-printed parts (v0.4: XIAO ESP32-C6 and a plain 18650 holder; box stands upright, glands in the short bottom end,
+no charge-port holes; charge with the lid off through the XIAO, or take the cell out).
 
 Run:  python3 pond_case.py        (needs: pip install manifold3d numpy)
 Writes STL files to out/:
-  box          electronics box that hangs on a post (battery holder, ESP32-C3 SuperMini, sensor board)
+  box          electronics box that hangs on a post (18650 holder, XIAO ESP32-C6, sensor board)
   box_lid      gasketed lid with a drip edge
   pipe_cap     sits on top of the 3" PVC stilling pipe, holds the two ultrasonic probes
   pipe_cap_top closes the cap's cable chamber; the cables leave sideways through a slot in the cap's rim
@@ -33,16 +33,14 @@ R_OUT = 6.0
 OW, OD = IW + 2 * WALL, ID + 2 * WALL
 x0, y0 = WALL, WALL                # inside origin
 
-# battery holder: 4-pad mount, 25.0 x 94.7 mm hole pattern,
-# round 8 mm pads, top 7.4 mm above the outside of the floor, 2.9 mm screw holes.
-# It stands up the left side. Its USB-C port faces IN (to the right) so a cable plugs in with the lid off;
-# the cell lifts straight out of the holder too. No holes in the walls for the port or the button.
-HOLD_COLS_X = (4.5, 29.5)          # pad columns (4.5 mm from the left wall)
-HOLD_ROWS_Y = (30.0, 124.7)        # pad rows; the port end of the holder is at the top
-PAD_D, PAD_TOP, PAD_HOLE_D = 8.0, 7.4, 2.9   # 8 mm pads (10 hit parts under the holder), 2.9 mm holes (2.8 was too tight)
-PORT_FROM_TOP_HOLE = 21.45         # USB-C port centre below the top pad row (measured)
-PORT_Y = HOLD_ROWS_Y[1] - PORT_FROM_TOP_HOLE
-PLUG_ZONE = (34.0, PORT_Y - 9.0, IW, PORT_Y + 12.0)   # kept clear right of the port for the plug and cable
+# battery holder: a plain single-18650 holder with wire leads, 76.2 x 21.2 x 20 mm, one hole in the middle of its
+# floor. It stands up the left side on a platform; one M3 screw through that hole into a heat-set insert in the
+# platform holds it, and a low rail along its right side stops it turning. Its ends stay open for the wires.
+HOLDER = (1.0, 30.0, 21.2, 76.2, 20.0)   # x, y, width, length, height of the holder
+PLAT_H = 7.0                       # platform top above the floor: room for the 5.7 mm insert under the holder
+PLAT_INSET = 1.0                   # platform is this much smaller than the holder all round
+RAIL_W, RAIL_H, RAIL_CLR = 1.8, 4.0, 0.4   # locating rail beside the holder, above the platform
+HOLDER_INSERT_D, HOLDER_INSERT_DEPTH = 4.1, 6.0
 
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
 SENSOR_BOARD = (48.0, 14.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
@@ -52,7 +50,14 @@ SENSOR_BOARD = (48.0, 14.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 
 # chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
 SB_HOLE_INSET = 3.0
 SB_POST_D, SB_PILOT_D = 5.5, 2.2   # M2.5 x 6 screws thread straight into the 2.2 mm pilot
-SUPERMINI = (43.0, 70.0, 18.0, 22.5, 6.0)        # ESP32-C3 SuperMini, 18 x 22.5 (USB-C at the top)
+SUPERMINI = (43.1, 70.0, 17.8, 21.0, 6.0)        # Seeed XIAO ESP32-C6, 17.8 x 21 (USB-C at the top)
+# v0.4: XIAO ESP32-C6 (charges the cell itself). Its R and B buttons sit in the USB-end corners and its antenna and
+# antenna socket along the far end, so nothing presses on those: the USB end sits between two corner stops, and
+# the clamp tab reaches over the far end, clear of the antenna, and presses on the metal shield can.
+XIAO_PCB, XIAO_CAN = 1.0, 2.5      # board thickness, shield can height above it (MEASURE yours)
+XIAO_CAN_IN = 3.5                  # the can starts this far in from the far end
+# cable clip: two posts the short USB-C cable's free end pushes between, near the top of the box
+CLIP_X, CLIP_Y, CLIP_GAP, CLIP_R, CLIP_H = 52.0, 118.0, 3.8, 2.5, 14.0
 # The SuperMini has no screw holes: its USB end slides under two corner lips (either side of the USB-C socket),
 # then a printed tab (esp_clamp.stl) screws down over its other end with one M2.5 x 6 into a post.
 # The board rests on its two short ends only, so wires soldered into the pin holes along its long edges are clear.
@@ -196,36 +201,33 @@ def cradle(x, y, w, d, ledge_z):
 
 
 def supermini_mount():
-    """Two corner hooks at the USB end + a screw post at the other end (see SM_* above)."""
+    """XIAO mount: rests under both short ends, two corner stops at the USB end, screw post + clamp at the far end."""
     x, y, w, d, lz = SUPERMINI
-    c, wall = SM_CLR, 2.4
+    c, wall = SM_CLR, 2.0
     bx0, bx1, by0, by1 = X(x), X(x + w), Y(y), Y(y + d)        # board outline
-    zb, zt = FLOOR + lz, FLOOR + lz + 1.6                       # board underside / top
+    zb = FLOOR + lz                                             # board underside
+    ztop = zb + XIAO_PCB + 1.5                                  # stops stand 1.5 mm above the board's top face
     adds, cuts = [], []
-    lip0 = zt                                                   # lip starts at board-top height at the back wall
-    lip1 = lip0 + SM_LIP_OUT + SM_LIP_T                         # post top: the 45 degree slope + 2 mm over its tip
-    for side in (0, 1):                                         # USB-end corner posts, either side of the socket
+    for side in (0, 1):                                         # USB-end corner stops (outside the board, buttons clear)
         if side == 0:
-            ox0, ox1, ix0, ix1 = bx0 - c - wall, bx0 - c, bx0 - c, bx0 + SM_HOOK_IN
+            L = sq(bx0 - c - wall, by1 - 2.0, bx0 - c, by1 + c + wall) + sq(bx0 - c - wall, by1 + c, bx0 + 3.0, by1 + c + wall)
+            rest = sq(bx0 - c, by1 - SM_REST, bx0 + 3.0, by1 + c + 0.01)
         else:
-            ox0, ox1, ix0, ix1 = bx1 + c, bx1 + c + wall, bx1 - SM_HOOK_IN, bx1 + c
-        wall_y = by1 + c                                       # the back wall's face toward the board
-        L = sq(ox0, by1 - 4.0, ox1, wall_y + wall) + sq(min(ox0, ix0), wall_y, max(ox1, ix1), wall_y + wall)
-        rest = sq(ix0, by1 - SM_REST, ix1, wall_y + 0.01)
-        lipfoot = sq(ix0, wall_y - SM_LIP_OUT, ix1, wall_y + 0.01)
-        adds.append(prism(round2d(L + rest), FLOOR - 0.2, zb))                    # walls + rest under the corner
-        adds.append(prism(round2d(L), zb - 0.01, lip0 + 0.01))                    # walls beside the board's edge
-        root = cube(ix0, wall_y - 0.01, lip0, ix1, wall_y + 0.01, lip1)
-        tip = cube(ix0, wall_y - SM_LIP_OUT - 0.01, lip0 + SM_LIP_OUT, ix1, wall_y - SM_LIP_OUT, lip1)
-        top = prism(L, lip0, lip1) + mf.Manifold.hull(root + tip)                 # walls + 45 degree lip
-        adds.append(top ^ prism(round2d(L + lipfoot), lip0 - 0.01, lip1 + 0.01))
+            L = sq(bx1 + c, by1 - 2.0, bx1 + c + wall, by1 + c + wall) + sq(bx1 - 3.0, by1 + c, bx1 + c + wall, by1 + c + wall)
+            rest = sq(bx1 - 3.0, by1 - SM_REST, bx1 + c, by1 + c + 0.01)
+        adds.append(prism(round2d(L + rest, 0.6), FLOOR - 0.2, zb))
+        adds.append(prism(round2d(L, 0.6), zb - 0.01, ztop))
     # far end: a rest under the board's end + the screw post just beyond it
     cx = (bx0 + bx1) / 2
     py = by0 - c - SM_POST_R
     far = sq(cx - 5.0, by0 - c - 0.5, cx + 5.0, by0 + SM_REST) + mf.CrossSection.circle(SM_POST_R, SEG).translate([cx, py])
     adds.append(prism(round2d(far), FLOOR - 0.2, zb))
-    adds.append(cyl(zt - FLOOR + 0.2, SM_POST_R, cx, py, FLOOR - 0.2))
-    cuts.append(cyl(zt - FLOOR, SM_PILOT_D / 2, cx, py, FLOOR + 1.0, 32))
+    post_top = zb + XIAO_PCB + XIAO_CAN                         # the tab lies flat across the post and the can
+    adds.append(cyl(post_top - FLOOR + 0.2, SM_POST_R, cx, py, FLOOR - 0.2))
+    cuts.append(cyl(post_top - FLOOR, SM_PILOT_D / 2, cx, py, FLOOR + 1.0, 32))
+    # cable clip
+    for sx_ in (-1, 1):
+        adds.append(cyl(CLIP_H + 0.2, CLIP_R, X(CLIP_X) + sx_ * (CLIP_GAP / 2 + CLIP_R), Y(CLIP_Y), FLOOR - 0.2))
     return adds, cuts
 
 
@@ -233,7 +235,7 @@ def esp_clamp():
     """The tab that holds the SuperMini's far end down: one M2.5 x 6 through it into the post. Print flat."""
     c = SM_CLR
     py_to_edge = c + SM_POST_R                                  # post centre to the board's end
-    L = SM_POST_R + 1.5 + py_to_edge + SM_TAB_OVER
+    L = SM_POST_R + 1.5 + py_to_edge + XIAO_CAN_IN + 2.5   # reaches 2.5 mm onto the shield can
     tab = rrect(SM_TAB_W, L, 2.0).extrude(SM_TAB_T)
     hole = cyl(SM_TAB_T + 2, 2.9 / 2, SM_TAB_W / 2, SM_POST_R + 1.5, -1, 32)
     return tab - hole
@@ -270,11 +272,13 @@ def box():
         under = mf.CrossSection([pts if left else pts[::-1]])          # counter-clockwise either side
         wedge = under.extrude(COL + FILLET + 1.0).rotate([90, 0, 0]).translate([0, Y(COL + FILLET + 1.0), 0])
         cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR - 1.0, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H))
-    # battery-holder pads
-    for px in HOLD_COLS_X:
-        for py in HOLD_ROWS_Y:
-            adds.append(cyl(PAD_TOP - FLOOR + 0.2, PAD_D / 2, X(px), Y(py), FLOOR - 0.2))
-            cuts.append(cyl(PAD_TOP - FLOOR + 1, PAD_HOLE_D / 2, X(px), Y(py), FLOOR))
+    # battery-holder platform, its insert and the locating rail
+    hx, hy, hw, hd, _ = HOLDER
+    plat = round2d(sq(X(hx + PLAT_INSET), Y(hy + PLAT_INSET), X(hx + hw - PLAT_INSET), Y(hy + hd - PLAT_INSET)))
+    adds.append(prism(plat, FLOOR - 0.2, FLOOR + PLAT_H))
+    rx = X(hx + hw + RAIL_CLR)
+    adds.append(prism(round2d(sq(rx, Y(hy + 8.0), rx + RAIL_W, Y(hy + hd - 8.0)), 0.8), FLOOR - 0.2, FLOOR + PLAT_H + RAIL_H))
+    cuts.append(cyl(HOLDER_INSERT_DEPTH + 0.5, HOLDER_INSERT_D / 2, X(hx + hw / 2), Y(hy + hd / 2), FLOOR + PLAT_H - HOLDER_INSERT_DEPTH))
     # board cradles
     sm_adds, sm_cuts = supermini_mount()
     adds += sm_adds

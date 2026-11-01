@@ -14,8 +14,8 @@ level and temperature, and shuts the pond pumps off before they can run dry.
   first pump when the water drops 3", turns off all the pumps and sends a critical phone alert when the water drops
   below the float, turns them back on when the water comes back, and warns you if DIP goes quiet or its battery
   gets low. The pumps can be on any smart plug Home Assistant can switch.
-- **Power:** one 18650 cell in a USB-C charging holder. The ESP32-C3 SuperMini sleeps between readings
-  (about 20 seconds awake every 20 minutes).
+- **Power:** one 18650 cell in a plain holder, charged through the Seeed XIAO ESP32-C6's USB-C. The XIAO
+  sleeps between readings (about 20 seconds awake every 20 minutes), so a cell lasts months.
 
 **The full build, step by step, with pictures:** [docs/DIP-assembly-guide.pdf](docs/DIP-assembly-guide.pdf) (Word version: [docx](docs/DIP-assembly-guide.docx)).
 No electronics experience needed; you test as you go.
@@ -26,8 +26,9 @@ No electronics experience needed; you test as you go.
 
 | Part | Notes |
 |---|---|
-| ESP32-C3 SuperMini | The brain. Wires solder straight into its pin holes (no header pins). |
-| 18650 battery holder board with USB-C charging and 3V / 5V output pads, plus an 18650 cell | Set its slide switch to **stay on** (not auto shut-off). The box's mounting pads fit a 25.0 x 94.7 mm hole pattern; check yours. |
+| Seeed XIAO ESP32-C6 | The brain, and it charges the cell. Wires solder straight into its pin holes (no header pins). |
+| Plain single-18650 holder with wire leads (76 x 21 x 20 mm, one hole in its floor), plus a name-brand 18650 cell | Screws to a platform in the box. Don't use a "battery shield" board with a 5V booster: it drains the cell in a day or two. |
+| Short USB-C cable | Stays plugged into the XIAO so you can charge with the lid off. |
 | JSN-SR20 dual-probe ultrasonic sensor (sold as JSN-SR20-Y1: 48 x 23 mm board, two 21.5 mm probes on cables) | Leave the MODE pad empty (normal Trig/Echo mode). It runs on 3.3V here, even though the board says 5V. |
 | Vertical float switch (M10 stem) | Must be OPEN when the water is normal. |
 | DS18B20 waterproof temperature probe (1 m) | Its included 4.7k resistor is the pull-up. |
@@ -36,21 +37,22 @@ No electronics experience needed; you test as you go.
 | 3 x PG7 cable glands | One for each probe cable, one for the 4-core cable. |
 | 3" PVC pipe (89 mm OD, 76 mm ID), about 30" long | 3-4 x 1/4" holes in the bottom 2-3", one 1/8" vent near the top. |
 | Cinder block + pea gravel | Holds the pipe upright in the pond. |
-| Screws | 7 x M3 heat-set inserts; 4 x M3 screws with rubber washers (box lid) and 3 more (pipe cap top); 5 x M2.5 x 6 (sensor board and SuperMini clamp); 4 for the battery holder; 2 x M4 stainless (float bracket); 1 short stainless screw (locks the cap to the pipe); 2 wood screws to hang the box on a post. |
+| Screws | 8 x M3 heat-set inserts; 4 x M3 screws with rubber washers (box lid) and 3 more (pipe cap top); 5 x M2.5 x 6 (sensor board and XIAO clamp); 1 x M3 x 8 (battery holder); 2 x M4 stainless (float bracket); 1 short stainless screw (locks the cap to the pipe); 2 wood screws to hang the box on a post. |
 
 ## Wiring
 
 ![Wiring](docs/guide/d_overview.png)
 
-| SuperMini pin | Goes to |
+| XIAO pin | Goes to |
 |---|---|
-| 3.3 / G | holder 3V pair 1 (+ / -) |
-| GPIO4 | middle of the 100k/100k battery divider: 100k (A) to the holder's + battery contact, 100k (B) to G |
-| GPIO6 / GPIO7 | sensor Trig / Echo (the sensor's 5V and GND pins go to holder 3V pair 2) |
-| GPIO5 | 4-core wire 3, temperature data (4.7k from wire 1) |
-| GPIO3 | 4-core wire 4, float (100k (C) from wire 1). Wakes the board. The float must be OPEN when the water is normal |
+| BAT + / BAT - (pads underneath) | the holder's red / black wires |
+| D0 | middle of the 100k/100k battery divider: 100k (A) to BAT +, 100k (B) to BAT - |
+| 3V3 / GND | the sensor's 5V / GND pins, and 4-core wires 1 / 2 |
+| D4 / D5 | sensor Trig / Echo |
+| D3 | 4-core wire 3, temperature data (4.7k from wire 1) |
+| D1 | 4-core wire 4, float (100k (C) from wire 1). Wakes the board. The float must be OPEN when the water is normal |
 
-4-core wires 1 / 2 (3.3V / GND) go to holder 3V pair 3. The two pull-ups sit at the cable's box end. At the pipe cap:
+The two pull-ups sit at the cable's box end. At the pipe cap:
 wire 1 to the probe's red, wire 2 to the probe's black and one float wire, wire 3 to yellow, wire 4 to the other float wire.
 
 ## Firmware (`firmware/`)
@@ -62,11 +64,11 @@ wire 1 to the probe's red, wire 2 to the probe's black and one float wire, wire 
 
 Setup:
 1. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in (it stays out of git).
-2. First flash over USB: `esphome run firmware/dip.yaml`. If the board isn't found, hold BOOT and tap RESET.
+2. First flash over USB: `esphome run firmware/dip.yaml`. If the board isn't found, hold B (boot) and tap R (reset).
 3. Battery reading: check the cell with a meter and compare it with DIP's "Battery voltage". If they differ, scale
    the `multiply:` value under the battery voltage sensor by (meter ÷ DIP) and flash again.
 
-Built with ESPHome 2025.5. Projects at https://esphome.io.
+Built with ESPHome 2026.10 (the XIAO C6 needs 2025.7 or newer). Projects at https://esphome.io.
 
 ## Home Assistant (`ha/`)
 
@@ -85,9 +87,9 @@ PETG or ASA outdoors; PLA goes soft in the sun.
 
 | File | What | How to print |
 |---|---|---|
-| `box.stl` | Electronics box, hangs upright on a post by the tab at the top (2 screws). Pads for the battery holder, 4 standoffs for the sensor board, lips and a screw post for the SuperMini, 3 cable glands in the bottom end. Charge through the holder's USB-C with the lid off. About 3.1" x 6.4" x 1.7" | as is, back plate down, no supports |
+| `box.stl` | Electronics box, hangs upright on a post by the tab at the top (2 screws). A platform for the battery holder (1 screw), 4 standoffs for the sensor board, corner stops and a screw post for the XIAO, clip posts for the USB-C cable, 3 cable glands in the bottom end. Charge through the XIAO's USB-C with the lid off. About 3.1" x 6.4" x 1.7" | as is, back plate down, no supports |
 | `box_lid.stl` | Lid with a drip edge, two stiffening ribs, washer seats round the 4 corner screws, "DIP" lettering | as is (already flipped) |
-| `esp_clamp.stl` | Small tab that holds the SuperMini's far end down (its USB end slides under two lips) | flat |
+| `esp_clamp.stl` | Small tab that holds the XIAO's far end down, pressing on its metal can | flat |
 | `gasket.stl` | TPU seal for the groove in the box rim (or use 1.5 mm foam cord) | 95A TPU, flat, 100 % infill |
 | `pipe_cap.stl` | Slides over the pipe and holds both probes; a slot in the rim lets the cables out sideways | upside down (rim on the bed); supports only under the probe band |
 | `pipe_cap_top.stl` | Flat lid for the pipe cap, 3 screws | flat |
@@ -97,6 +99,9 @@ PETG or ASA outdoors; PLA goes soft in the sun.
 
 ## Version history
 
+- **v0.4:** Seeed XIAO ESP32-C6 and a plain 18650 holder instead of the ESP32-C3 SuperMini and a battery shield
+  board. The shield's always-on 5V booster emptied a full cell in about a day; the XIAO charges the cell itself
+  and sleeps at a few microamps. New pins (see Wiring), new battery platform, XIAO mount and cable clip.
 - **v0.3:** cable glands 22 mm apart, so the lock nuts can turn. The two bottom lid posts are shorter, with 45°
   undersides. The sensor board moved away from the battery holder. The bottom mounting tab was removed, because
   the glands blocked its screws.

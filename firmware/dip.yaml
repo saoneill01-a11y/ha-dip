@@ -1,19 +1,21 @@
-# DIP (Depth In Pond), the pond water-level sensor: ESP32-C3 SuperMini, JSN-SR20 dual-probe ultrasonic (JSN-SR20-Y1), float switch, 18650 battery.
+# DIP (Depth In Pond), the pond water-level sensor: Seeed XIAO ESP32-C6, JSN-SR20 dual-probe ultrasonic (JSN-SR20-Y1), float switch, 18650 battery.
 #
 # What it does:
 #   - Wakes every 20 minutes, takes 5 distance readings, sends the middle one to Home Assistant, sleeps again.
-#   - The float switch wakes it IMMEDIATELY when the water drops (GPIO3). While the float stays low it checks
+#   - The float switch wakes it IMMEDIATELY when the water drops (D1). While the float stays low it checks
 #     every 2 minutes, and it also wakes the moment the float comes back up.
 #   - Sends pond water temperature, battery voltage and %, float state and Wi-Fi signal each time.
 #   - Turn on "DIP stay awake" in Home Assistant to keep it awake for updates (it checks on each wake).
 #
 # Pins (see ../docs/guide/d_overview.png):
-#   GPIO3  float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
-#   GPIO4  battery voltage through a 100k/100k divider
-#   GPIO6  sensor Trig     GPIO7  sensor Echo
-#   GPIO5  DS18B20 water-temperature probe data, 4.7k pull-up to 3V3
+#   D1 (GPIO1)   float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
+#   D0 (GPIO0)   battery voltage through a 100k/100k divider from BAT+
+#   D4 (GPIO22)  sensor Trig     D5 (GPIO23)  sensor Echo
+#   D3 (GPIO21)  DS18B20 water-temperature probe data, 4.7k pull-up to 3V3
+#   The cell goes to the XIAO's BAT + / - pads underneath; the XIAO charges it from its USB-C.
+#   Only GPIO0-7 can wake a C6 from deep sleep, so the float has to stay on D0-D2.
 #
-# First flash over USB: plug in, run `esphome run dip.yaml`. If it isn't found, hold BOOT, tap RESET.
+# First flash over USB: plug in, run `esphome run dip.yaml`. If it isn't found, hold B (boot), tap R (reset).
 # Copy secrets.example.yaml to secrets.yaml and fill it in (secrets.yaml stays out of git).
 
 substitutions:
@@ -27,12 +29,23 @@ esphome:
   name: ${name}
   friendly_name: ${friendly_name}
   on_boot:
-    priority: -100           # after Wi-Fi and the API are up
-    then:
-      - script.execute: take_reading
+    - priority: 800          # before Wi-Fi: the XIAO's antenna switch (GPIO3 low = switch on, GPIO14 low = built-in antenna)
+      then:
+        - lambda: |-
+            gpio_reset_pin(GPIO_NUM_3);
+            gpio_set_direction(GPIO_NUM_3, GPIO_MODE_OUTPUT);
+            gpio_set_level(GPIO_NUM_3, 0);
+            gpio_reset_pin(GPIO_NUM_14);
+            gpio_set_direction(GPIO_NUM_14, GPIO_MODE_OUTPUT);
+            gpio_set_level(GPIO_NUM_14, 0);
+    - priority: -100         # after Wi-Fi and the API are up
+      then:
+        - script.execute: take_reading
 
 esp32:
-  board: esp32-c3-devkitm-1
+  board: esp32-c6-devkitc-1
+  variant: esp32c6
+  flash_size: 4MB            # the XIAO has 4 MB (the devkit board this borrows has 8)
   framework:
     type: esp-idf
 
@@ -67,7 +80,7 @@ deep_sleep:
   run_duration: 20s          # safety net: sleep after 20 s even if something hangs
   sleep_duration: ${normal_sleep}
   wakeup_pin:
-    number: GPIO3
+    number: GPIO1
     inverted: true           # float closes to GND when the water is low
     mode: INPUT              # the 100k pull-up is on the board (internal pull-ups aren't reliable in sleep)
     allow_other_uses: true   # the float binary sensor reads the same pin
@@ -121,7 +134,7 @@ script:
 
 one_wire:
   - platform: gpio
-    pin: GPIO5
+    pin: GPIO21
 
 sensor:
   - platform: dallas_temp
@@ -133,8 +146,8 @@ sensor:
   - platform: ultrasonic
     id: distance_raw
     name: "Distance to water"
-    trigger_pin: GPIO6
-    echo_pin: GPIO7
+    trigger_pin: GPIO22
+    echo_pin: GPIO23
     pulse_time: 25us         # the JSN-SR20 wants at least 20 us; lengthen if readings come back empty
     timeout: 3m
     update_interval: never   # the script triggers the readings
@@ -152,13 +165,13 @@ sensor:
   - platform: adc
     id: battery_voltage
     name: "Battery voltage"
-    pin: GPIO4
+    pin: GPIO0
     attenuation: 12db
     samples: 8
     update_interval: never
     accuracy_decimals: 2
     filters:
-      - multiply: 2.033      # 100k/100k divider (2.0), x1.0167 calibrated against a meter Oct 31, 2026 (4.08 V vs 4.013 read)
+      - multiply: 2.0        # 100k/100k divider; check against a meter and scale this (see the README)
     on_value:
       then:
         - component.update: battery_percent
@@ -172,9 +185,9 @@ sensor:
     accuracy_decimals: 0
     update_interval: never
     lambda: |-
-      // simple Li-ion curve: 3.3 V = empty, 4.08 V = full (what this holder charges to, measured Oct 31, 2026)
+      // simple Li-ion curve: 3.3 V = empty, 4.15 V = full (the XIAO charges to 4.2 V)
       float v = id(battery_voltage).state;
-      float p = (v - 3.3f) / (4.08f - 3.3f) * 100.0f;
+      float p = (v - 3.3f) / (4.15f - 3.3f) * 100.0f;
       return p < 0 ? 0 : (p > 100 ? 100 : p);
 
   - platform: wifi_signal
@@ -187,7 +200,7 @@ binary_sensor:
     name: "Float switch low"
     device_class: problem
     pin:
-      number: GPIO3
+      number: GPIO1
       inverted: true
       mode: INPUT
       allow_other_uses: true

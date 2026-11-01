@@ -147,7 +147,7 @@ BREAK()
 # ================================================================ contents
 H("What's in this guide")
 for s in ["1. Tools and supplies", "2. The parts", "3. Printing the case", "4. Soldering basics (read this first)",
-          "5. Prepare the printed parts", "6. Check the float switch", "7. Wire the battery holder, SuperMini and sensor board",
+          "5. Prepare the printed parts", "6. Check the float switch", "7. Wire the battery, XIAO and sensor board",
           "8. Bench test", "9. The probe cables", "10. The 4-core cable and the pipe cap", "11. Put the box together",
           "12. Software: ESPHome and Home Assistant", "13. Install at the pond", "14. Final checks and troubleshooting",
           "Appendix: every connection in one table"]:
@@ -172,7 +172,7 @@ TABLE([["Tool / supply", "What it's for"],
        ["\"Helping hands\" clamp or a lump of Blu-Tack", "Holding parts still while you solder"],
        ["Stranded hookup wire, 22-26 AWG, in red, black and a few other colors", "Short wires inside the box"],
        ["4 female-to-female jumper wires", "Plugging onto the sensor board's 4 pins"],
-       ["USB-C cable and a computer", "Loading the software onto the SuperMini"],
+       ["USB-C cable and a computer", "Loading the software onto the XIAO"],
        ["Small screwdrivers, drill with 1/4\", 1/8\" and pilot bits, marker, tape", "Assembly and the PVC pipe"],
        ["Safety glasses, a fan or open window", "Solder can spit, and the smoke isn't good to breathe"]],
       [3.6, 3.0])
@@ -181,8 +181,8 @@ TABLE([["Tool / supply", "What it's for"],
 H("2. The parts")
 P("Lay everything out and check it off before you start.")
 TABLE([["Part", "How many", "Notes"],
-       ["ESP32-C3 SuperMini board", "1", "The small black board with a USB-C socket. This is the brain."],
-       ["18650 battery holder board + 18650 cell", "1 + 1", "Charges through USB-C. Has three 3V and three 5V output pad pairs."],
+       ["Seeed XIAO ESP32-C6", "1", "The small board with a USB-C socket and a metal can. This is the brain, and it charges the battery."],
+       ["Plain single-18650 holder with wire leads + 18650 cell", "1 + 1", "Just a cradle with a red and a black wire. Use a name-brand cell (Samsung, LG, Molicel)."],
        ["JSN-SR20 dual-probe ultrasonic sensor (sold as JSN-SR20-Y1) + 2 probes", "1 set", "Blue board; the two round black probes plug into it."],
        ["Float switch (vertical, M10 stem)", "1", "Two yellow wires, either way round."],
        ["DS18B20 waterproof temperature probe", "1", "Steel tip on a black cable, red / black / yellow wires. Comes with a 4.7k resistor."],
@@ -190,10 +190,11 @@ TABLE([["Part", "How many", "Notes"],
        ["100k resistors", "3", "Called (A), (B) and (C) in this guide."],
        ["4-core outdoor cable", "box to pipe, plus slack", "Four wires inside one jacket."],
        ["PG7 cable glands", "3", "Waterproof cable entries for the box."],
-       ["M3 heat-set inserts", "7", "4 for the box lid, 3 for the pipe cap top."],
+       ["M3 heat-set inserts", "8", "4 for the box lid, 1 for the battery platform, 3 for the pipe cap top."],
        ["M3 screws: 4 with rubber washers (box lid), 3 more (pipe cap top)", "7", "About 10-12 mm long."],
-       ["M2.5 x 6 screws", "5", "4 for the sensor board, 1 for the SuperMini clamp."],
-       ["Screws for the battery holder", "4", "M3 x 6, or the ones that came with the holder."],
+       ["M2.5 x 6 screws", "5", "4 for the sensor board, 1 for the XIAO clamp."],
+       ["M3 x 8 screw + 1 more M3 heat-set insert", "1 + 1", "Holds the battery holder through the hole in its floor."],
+       ["Short USB-C cable", "1", "Stays plugged into the XIAO, for charging with the lid off."],
        ["M4 screws, stainless", "2", "Float bracket to the pipe."],
        ["Wood screws, stainless", "2", "Hang the box on the post through its top tab."],
        ["Short stainless screw", "1", "Locks the pipe cap to the pipe."],
@@ -201,8 +202,7 @@ TABLE([["Part", "How many", "Notes"],
        ["Cinder block + a bag of pea gravel", "1", "Holds the pipe upright in the pond."]],
       [2.6, 1.0, 3.0])
 H("What the electronic parts look like", 2)
-IMG2("supermini_front.jpg", "supermini_back.jpg", 3.1, "ESP32-C3 SuperMini, front (left) and back (right). The pin numbers are printed on the BACK.")
-IMG2("holder_top_b.jpg", "holder_back.jpg", 3.1, "Battery holder, top and back. The pad pairs along the edges are marked 3V on one side and 5V on the other. The square pad of each pair is +.")
+P("The XIAO's pin names (D0-D10, 5V, GND, 3V3) are printed on its back, and the two battery pads (BAT - and BAT +) are underneath too. Chapter 7 has a picture of the pins.")
 IMG2("sensor_front.jpg", "sensor_back.jpg", 3.1, "Ultrasonic sensor board, parts side (left) and connector side (right). Note the empty MODE pad top left: leave it empty.")
 IMG2("probes.jpg", "temp_probe.jpg", 3.1, "The two ultrasonic probes on their cables (left) and the temperature probe (right).")
 IMG2("float_switch.jpg", "resistor_4k7.jpg", 3.1, "Float switch in its bracket (left) and the 4.7k resistor that came with the temperature probe (right).")
@@ -220,7 +220,7 @@ P("All the printed parts are in the case/out folder of the project as STL files.
 TABLE([["File", "What it is", "How to print"],
        ["box.stl", "The electronics box that hangs on the post", "As it comes, back plate down, no supports"],
        ["box_lid.stl", "The lid, with DIP lettering", "As it comes (already flipped)"],
-       ["esp_clamp.stl", "Small tab that holds the SuperMini down", "Flat"],
+       ["esp_clamp.stl", "Small tab that holds the XIAO down", "Flat"],
        ["gasket.stl", "Rubber-like seal for the lid", "95A TPU, flat, 100% infill (or use 1.5 mm foam cord instead)"],
        ["pipe_cap.stl", "Sits on top of the PVC pipe and holds the probes", "Upside down (rim on the bed); supports only under the probe band"],
        ["pipe_cap_top.stl", "Flat lid for the pipe cap", "Flat"],
@@ -230,7 +230,7 @@ IMG("r_box.png", 6.4, "The box")
 IMG("r_box_lid.png", 6.4, "The lid: outside and inside")
 IMG("r_pipe_cap.png", 6.4, "The pipe cap: top side, and underneath where the probes push in")
 IMG2("r_pipe_cap_top.png", "r_float_bracket.png", 3.0, "Pipe cap top (left) and float bracket (right)")
-IMG2("r_esp_clamp.png", "r_gasket.png", 3.0, "SuperMini clamp tab (left) and gasket (right)")
+IMG2("r_esp_clamp.png", "r_gasket.png", 3.0, "XIAO clamp tab (left) and gasket (right)")
 BREAK()
 
 # ================================================================ 4 soldering basics
@@ -250,8 +250,8 @@ P("Strip about 5 mm for wires going into a board hole and about 8 mm for wire-to
 H("Splicing two wires (you'll do this a lot)", 2)
 IMG("d_splice.png", 6.2)
 WARN("Always slide the heat shrink onto the wire BEFORE you solder. Everyone forgets this once; it means cutting the joint and doing it again.")
-H("Soldering into the SuperMini", 2)
-P("The SuperMini's pins are half-holes along its edges. Push the tinned wire into the hole from the front, hold "
+H("Soldering into the XIAO", 2)
+P("The XIAO's pins are half-holes along its edges. Push the tinned wire into the hole from the front, hold "
   "the iron against the gold pad and the wire, and feed in a little solder. Some holes take two wires (or a "
   "wire and a resistor leg): put both in, then solder them together.")
 WARN("Use as little solder as it takes. Too much can bridge to the next pin. If two pins get joined, touch the iron to the "
@@ -262,14 +262,14 @@ BREAK()
 H("5. Prepare the printed parts")
 H("Heat-set inserts", 2)
 P("Inserts are little brass threads you melt into the plastic so screws hold strongly.")
-STEP(1, "Find the 4 holes in the corner posts of the box and the 3 holes in the pipe cap's posts.")
+STEP(1, "Find the 4 holes in the corner posts of the box, the 1 in the battery platform, and the 3 in the pipe cap's posts.")
 STEP(2, "Set an insert on top of a hole, narrow end down.")
 STEP(3, "Touch the hot soldering iron (a spare tip if you have one) into the insert and let it sink straight down slowly. Don't push hard. Stop when it's flush with the surface.")
 STEP(4, "While it's still soft, press it flat with something metal. Let it cool.")
 H("Cable glands", 2)
 P("Screw a PG7 gland into each of the 3 holes in the bottom end of the box, with its lock nut inside. The nuts just fit "
   "side by side: turn each one by hand, then snug it with pliers. Leave the domed caps loose for now: cables go through later.")
-IMG("r_box_filled.png", 6.4, "How it all goes together inside the box (battery holder, sensor board and SuperMini), and the 3 gland holes in the bottom end")
+IMG("r_box_filled.png", 6.4, "How it all goes together inside the box (battery holder, sensor board and XIAO), and the 3 gland holes in the bottom end")
 H("Gasket", 2)
 P("Press the TPU gasket into the groove around the rim of the box (or lay 1.5 mm foam cord in the groove).")
 
@@ -285,33 +285,30 @@ STEP(5, "Mount the float in the printed bracket: stem through the hole, nut on t
 BREAK()
 
 # ================================================================ 7 wiring
-H("7. Wire the battery holder, SuperMini and sensor board")
+H("7. Wire the battery, XIAO and sensor board")
 WARN("Take the battery OUT of the holder while you solder. Put it back only when a step tells you to.")
-P("First, find your way around the SuperMini. Turn it over so you can read the numbers on the back:")
+P("First, find your way around the XIAO. Here it is from the front (metal can up, USB-C at the top):")
 IMG("d_pins.png", 5.8)
-P("You'll use 7 pins: 3.3, G, 3, 4 on one edge, and 5, 6, 7 on the other. The rest stay empty.")
+P("You'll use D0, D1, D3, D4 and D5 down one edge, GND and 3V3 on the other, and the two BAT pads underneath. The rest stay empty.")
 H("7a. Battery reading resistors (A) and (B)", 2)
-P("These two 100k resistors let the SuperMini measure how full the battery is.")
+P("These two 100k resistors let the XIAO measure how full the battery is. They go on its underside, next to the battery pads.")
 IMG("d_divider.png", 6.0)
-STEP(1, "Slide a short piece of heat shrink over each leg of resistor (B). Bend the legs down so it bridges from hole G to hole 4, passing over hole 3.3 without touching it.")
-STEP(2, "Push the legs into G and 4 from the front side. Don't solder yet.")
-STEP(3, "Bend one leg of resistor (A) and push it into hole 4 next to (B)'s leg. Solder hole 4 (both legs) and hole G. Trim the extra leg length on the back with the cutters.")
-STEP(4, "Solder a 10 cm wire (a purple or other spare color) onto the free leg of resistor (A), with heat shrink over the joint. This wire will go to the battery's + contact.")
-H("7b. Power from the battery holder to the SuperMini", 2)
-STEP(1, "Cut a red and a black wire, about 10 cm each. Strip and tin both ends.")
-STEP(2, "Solder the red wire into hole 3.3 and the black wire into hole G (G already has a resistor leg: the wire goes in alongside it).")
-STEP(3, "Solder the other ends to the holder's 3V pair 1: red to the square + pad, black to the round - pad.")
-STEP(4, "Solder the purple wire from resistor (A) to the holder's + battery contact. This is the metal clip at the end of the battery bay marked +; solder to where its tab comes through the back of the board.")
-NOTE("Check the + battery contact before you solder: put the battery in, set the meter to DC volts, and touch black to a 3V - pad and red to the contact. "
-     "It should read between 3.0 and 4.2 V. Take the battery back out before soldering.")
+STEP(1, "Slide heat shrink over the legs of both resistors. Lay them flat against the XIAO's back as in the picture.")
+STEP(2, "Resistor (A): one leg to the BAT + pad, the other into hole D0. Resistor (B): one leg into hole D0 too, the other to the BAT - pad.")
+STEP(3, "Solder D0 (both legs) from the back. Leave the BAT pads for the next step, so the battery wires and the resistor legs are soldered together.")
+H("7b. The battery to the XIAO", 2)
+STEP(1, "Shorten the holder's red and black wires so they reach the XIAO's spot in the box with a little slack. Strip and tin the ends.")
+STEP(2, "Red to the BAT + pad, black to the BAT - pad, each together with the resistor leg already there.")
+WARN("Get these the right way round: red to +, black to -. The wrong way round ruins the XIAO's charger. Check the + and - marks next to the pads.")
+NOTE("The XIAO charges the cell whenever its USB-C is plugged in. There's no switch: DIP is on whenever the cell is in.")
 H("7c. The sensor board", 2)
 P("The sensor board has 4 pins sticking out, labelled 5V, Trig, Echo and GND (the labels are on the connector side). Use female jumper wires "
   "so you can plug on rather than solder to the board.")
 STEP(1, "Take 4 female jumper wires. Cut each to about 12 cm, keeping the plug end. Strip and tin the cut ends.")
 STEP(2, "Plug them onto the sensor board pins. Use red for 5V and black for GND if you have them.")
-STEP(3, "Trig wire into SuperMini hole 6, Echo wire into hole 7. Solder.")
-STEP(4, "5V wire to the holder's 3V pair 2 + (square pad). GND wire to 3V pair 2 - (round pad). Solder.")
-NOTE("Yes, the sensor's \"5V\" pin goes to a 3V pad. This sensor normally works on 3.3V, and running it on 3.3V keeps its signals safe for the SuperMini. "
+STEP(3, "Trig wire into XIAO hole D4, Echo wire into hole D5. Solder.")
+STEP(4, "5V wire into hole 3V3, GND wire into hole GND. Don't solder yet: the 4-core cable's wires 1 and 2 join them in chapter 10.")
+NOTE("Yes, the sensor's \"5V\" pin goes to 3V3. This sensor normally works on 3.3V, and running it on 3.3V keeps its signals safe for the XIAO. "
      "The bench test in chapter 8 confirms it on your board.", "Why 3V? ")
 WARN("Leave the MODE pad on the sensor board (two little pads top left, next to the word Mode) EMPTY. Putting a resistor there changes how the sensor talks and the readings stop.")
 BREAK()
@@ -319,15 +316,15 @@ BREAK()
 # ================================================================ 8 bench test
 H("8. Bench test")
 P("Now test what you've built before anything goes outside. The software has to be loaded first: chapter 12 explains how, "
-  "but if someone else is handling the software, give them the SuperMini at this point (still wired up).")
+  "but if someone else is handling the software, give them the XIAO at this point (still wired up).")
 STEP(1, "Plug the two ultrasonic probes into the white sockets on the sensor board (they only fit one way round).")
-STEP(2, "Put the battery in. Slide the holder's switch to the \"stay on\" position.")
+STEP(2, "Solder the 3V3 and GND holes for now (you can add the cable wires later with a little more solder), then put the battery in.")
 STEP(3, "Point the probes at a wall about 1 m (3 ft) away. In Home Assistant, turn on \"DIP stay awake\" and watch \"Distance to water\". It should read about 100 cm and change when you move.")
 STEP(4, "Check \"Battery voltage\" reads 3.0-4.2 V, close to what your meter says.")
 NOTE("Also worth checking if you have a meter that reads milliamps: with DIP asleep, the whole thing should draw well under 1 mA. "
      "Much more than that and the battery won't last.", "Optional: ")
-P("If the distance stays empty or reads nonsense at 3.3V, stop here and ask for help. Don't move the sensor to a 5V pad on your own: "
-  "at 5V its Echo signal is too strong for the SuperMini and would need two extra resistors.", italic=True)
+P("If the distance stays empty or reads nonsense at 3.3V, stop here and ask for help. Don't move the sensor to the 5V pin on your own: "
+  "at 5V its Echo signal is too strong for the XIAO and would need two extra resistors.", italic=True)
 BREAK()
 
 # ================================================================ 9 probe cables
@@ -355,8 +352,8 @@ H("10a. Box end", 2)
 STEP(1, "Feed the cable through the third gland into the box. Strip back about 8 cm of the outer jacket.")
 STEP(2, "Add the two pull-up resistors as shown below: the 4.7k from wire 1 to wire 3, and 100k (C) from wire 1 to wire 4. Solder each leg onto the wire with a little heat shrink over each joint.")
 IMG("d_boxend.png", 6.2)
-STEP(3, "Wire 1 to the holder's 3V pair 3 + (square). Wire 2 to 3V pair 3 - (round).")
-STEP(4, "Wire 3 to SuperMini hole 5. Wire 4 to SuperMini hole 3.")
+STEP(3, "Wire 1 into XIAO hole 3V3, alongside the sensor's 5V wire. Wire 2 into hole GND, alongside the sensor's GND wire. Solder.")
+STEP(4, "Wire 3 to XIAO hole D3. Wire 4 to XIAO hole D1.")
 H("10b. Pipe cap end", 2)
 STEP(1, "Feed the temperature probe's cable and the float wires up through the open part of the pipe cap's plate, and the 4-core cable in through the slot in the side of the cap.")
 STEP(2, "Splice them as below. Use adhesive-lined heat shrink here: it's outdoors.")
@@ -367,14 +364,15 @@ BREAK()
 
 # ================================================================ 11 box together
 H("11. Put the box together")
-STEP(1, "Screw the battery holder onto its 4 round pads with its USB-C socket facing into the box.")
+STEP(1, "Set the battery holder on its platform (cell out) and screw it down through the hole in its floor with the M3 x 8 screw.")
 STEP(2, "Screw the sensor board onto its 4 posts with the 4 M2.5 x 6 screws, parts side down (connectors and pins facing you).")
-STEP(3, "Slide the SuperMini's USB end under the two little lips, lay it flat, and screw the clamp tab over the other end with one M2.5 x 6 screw.")
-IMG("r_esp_mount.png", 4.0, "SuperMini: USB end under the two lips, clamp tab over the far end")
-STEP(4, "Plug the probe plugs into the sensor board. Tuck the wires so nothing is pinched.")
-STEP(5, "Gently pull the cables back through the glands until they're snug, then tighten the gland caps by hand plus a quarter turn.")
-STEP(6, "Put the battery in, switch to stay on. Put the lid on with the 4 M3 screws and rubber washers; tighten evenly in a cross pattern.")
-NOTE("To charge later: take the lid off and plug a USB-C cable into the holder, or take the cell out and charge it in a charger.", "Charging: ")
+STEP(3, "Lay the XIAO on its rests, USB-C toward the top of the box, between the two corner stops. Screw the clamp tab over the far end with one M2.5 x 6 screw: it presses on the metal can, clear of the antenna.")
+IMG("r_esp_mount.png", 4.0, "XIAO: USB end between the corner stops, clamp tab on the metal can")
+STEP(4, "Plug the short USB-C cable into the XIAO and push its free end between the two clip posts near the top.")
+STEP(5, "Plug the probe plugs into the sensor board. Tuck the wires so nothing is pinched.")
+STEP(6, "Gently pull the cables back through the glands until they're snug, then tighten the gland caps by hand plus a quarter turn.")
+STEP(7, "Put the battery in. Put the lid on with the 4 M3 screws and rubber washers; tighten evenly in a cross pattern.")
+NOTE("To charge later: take the lid off and plug a charger into the free end of the USB-C cable. The XIAO charges slowly (a day or more from empty), so for a quick charge take the cell out and use an 18650 charger.", "Charging: ")
 
 # ================================================================ 12 software
 H("12. Software: ESPHome and Home Assistant")
@@ -382,9 +380,9 @@ P("DIP runs ESPHome, which connects to Home Assistant. The project's firmware fi
   "settings are in ha/dip_package.yaml.")
 H("12a. Load the firmware (first time, over USB)", 2)
 STEP(1, "Copy firmware/secrets.example.yaml to secrets.yaml and fill in the Wi-Fi name, password and an API key.")
-STEP(2, "Connect the SuperMini to the computer with a USB-C cable (battery out).")
-STEP(3, "Run: esphome run firmware/dip.yaml   (or use the ESPHome Builder app in Home Assistant).")
-STEP(4, "If the board isn't found, hold the BOOT button, tap RESET, then let go of BOOT, and try again.")
+STEP(2, "Connect the XIAO to the computer with a USB-C cable.")
+STEP(3, "Run: esphome run firmware/dip.yaml   (or use the ESPHome Builder app in Home Assistant). It needs ESPHome 2025.7 or newer.")
+STEP(4, "If the board isn't found, hold the B (boot) button, tap R (reset), then let go of B, and try again.")
 P("After this first time, updates go over Wi-Fi. DIP sleeps most of the time, so first turn on \"DIP stay awake\" in "
   "Home Assistant and wait for its next wake (up to 20 minutes): it sees the switch and stays on. Turn the switch "
   "off when you're done. Left on, it drains the battery in a day or two.")
@@ -422,12 +420,12 @@ B("Push the float down with a stick and hold it for a minute: \"Float switch low
 B("\"Battery\" shows a percentage. Check it again in a week to see how fast it drops.")
 H("If something's wrong", 2)
 TABLE([["What you see", "Likely cause and fix"],
-       ["Nothing shows up in Home Assistant", "Battery flat, switch not on \"stay on\", or Wi-Fi out of range. Check the SuperMini's red power light with the lid off."],
+       ["Nothing shows up in Home Assistant", "Battery flat or in backwards, or Wi-Fi out of range. Plug in the USB-C cable with the lid off and see if it shows up."],
        ["Distance empty or jumping around", "Probe plugs loose, a probe splice broken, or a probe not pointing straight down. Check the splices with the meter (chapter 9)."],
-       ["Temperature shows -127 or nothing", "The temp wire (3) isn't reaching pin 5, or the 4.7k is missing or broken."],
+       ["Temperature shows -127 or nothing", "The temp wire (3) isn't reaching D3, or the 4.7k is missing or broken."],
        ["Float always \"low\"", "Float upside down (chapter 6) or wire 4 touching ground somewhere."],
        ["Float never triggers", "Float stuck, mounted too low, or 100k (C) missing."],
-       ["Battery reading 0 or wild", "Resistor (A)'s wire not on the + battery contact, or (A)/(B) not soldered in hole 4."],
+       ["Battery reading 0 or wild", "Resistor (A) not on BAT +, or (A)/(B) not soldered in hole D0."],
        ["Battery drains in days", "It isn't going to sleep: make sure \"DIP stay awake\" is off in Home Assistant."]],
       [2.3, 4.3])
 BREAK()
@@ -435,20 +433,19 @@ BREAK()
 # ================================================================ appendix
 H("Appendix: every connection in one table")
 TABLE([["From", "To", "Notes"],
-       ["Holder 3V pair 1 +", "SuperMini 3.3", "red"],
-       ["Holder 3V pair 1 -", "SuperMini G", "black"],
-       ["Holder + battery contact", "Resistor (A)", "via the purple wire"],
-       ["Resistor (A) other leg", "SuperMini 4", "shares hole 4 with (B)"],
-       ["Resistor (B)", "SuperMini 4 to SuperMini G", "legs sleeved, passes over 3.3"],
-       ["Holder 3V pair 2 +", "Sensor board 5V pin", "female jumper"],
-       ["Holder 3V pair 2 -", "Sensor board GND pin", "female jumper"],
-       ["Sensor board Trig", "SuperMini 6", ""],
-       ["Sensor board Echo", "SuperMini 7", ""],
+       ["Holder red", "XIAO BAT +", "underneath"],
+       ["Holder black", "XIAO BAT -", "underneath"],
+       ["Resistor (A)", "XIAO BAT + to D0", "on the underside"],
+       ["Resistor (B)", "XIAO D0 to BAT -", "on the underside"],
+       ["Sensor board 5V pin", "XIAO 3V3", "female jumper; shares the hole with cable wire 1"],
+       ["Sensor board GND pin", "XIAO GND", "female jumper; shares the hole with cable wire 2"],
+       ["Sensor board Trig", "XIAO D4", ""],
+       ["Sensor board Echo", "XIAO D5", ""],
        ["Probes (2)", "Sensor board white sockets", "cut and re-soldered inside the box"],
-       ["Cable wire 1 (3.3V)", "Holder 3V pair 3 +", "4.7k and 100k (C) attach here"],
-       ["Cable wire 2 (GND)", "Holder 3V pair 3 -", ""],
-       ["Cable wire 3 (Temp)", "SuperMini 5", "4.7k from wire 1"],
-       ["Cable wire 4 (Float)", "SuperMini 3", "100k (C) from wire 1"],
+       ["Cable wire 1 (3.3V)", "XIAO 3V3", "4.7k and 100k (C) attach here"],
+       ["Cable wire 2 (GND)", "XIAO GND", ""],
+       ["Cable wire 3 (Temp)", "XIAO D3", "4.7k from wire 1"],
+       ["Cable wire 4 (Float)", "XIAO D1", "100k (C) from wire 1"],
        ["Cap end: wire 1", "Temp probe red", ""],
        ["Cap end: wire 2", "Temp probe black + one float wire", "3-way splice"],
        ["Cap end: wire 3", "Temp probe yellow", ""],
