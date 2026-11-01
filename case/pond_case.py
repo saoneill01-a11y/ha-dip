@@ -276,7 +276,8 @@ def box():
                (wx + s * reach, SHORT_COL_Z + reach), (wx - s * 1.0, SHORT_COL_Z - 1.0)]
         under = mf.CrossSection([pts if left else pts[::-1]])          # counter-clockwise either side
         wedge = under.extrude(COL + FILLET + 1.0).rotate([90, 0, 0]).translate([0, Y(COL + FILLET + 1.0), 0])
-        cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H))   # stops at the floor
+        keep_round = prism(rrect(IW, ID, R_OUT - WALL).translate([x0, y0]), FLOOR, H)   # leaves the box's rounded inside corner
+        cuts.append(wedge ^ cube(min(wx, wx + s * reach), Y(0), FLOOR, max(wx, wx + s * reach), Y(COL + FILLET + 1.0), H) ^ keep_round)
     # battery-holder platform, its insert and the locating rail
     hx, hy, hw, hd, _ = HOLDER
     rx = X(hx + hw + RAIL_CLR)
