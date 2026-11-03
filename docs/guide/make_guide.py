@@ -193,9 +193,9 @@ TABLE([["Part", "How many", "Notes"],
        ["M3 heat-set inserts", "8", "4 for the box lid, 1 for the battery platform, 3 for the pipe cap top."],
        ["M3 screws: 4 with rubber washers (box lid), 3 more (pipe cap top)", "7", "About 10-12 mm long."],
        ["M2.5 x 6 screws", "5", "4 for the sensor board, 1 for the XIAO clamp."],
-       ["M3 x 8 screw + 1 more M3 heat-set insert", "1 + 1", "Holds the battery holder through the hole in its floor."],
+       ["M3 x 8 screw", "1", "Holds the battery holder down through the hole in its floor (into the platform's insert)."],
        ["Short USB-C cable", "1", "Stays plugged into the XIAO, for charging with the lid off."],
-       ["M4 screws, stainless", "2", "Float bracket to the pipe."],
+       ["M4 screws, stainless", "2", "Float bracket to the pipe. For the outside bracket, add 2 washers and 2 nuts."],
        ["Wood screws, stainless", "2", "Hang the box on the post through its top tab."],
        ["Short stainless screw", "1", "Locks the pipe cap to the pipe."],
        ["3\" PVC pipe, about 30\" long", "1", "89 mm outside, 76 mm inside."],
@@ -217,6 +217,8 @@ BREAK()
 H("3. Printing the case")
 P("All the printed parts are in the case/out folder of the project as STL files. PETG or ASA is best outdoors; "
   "PLA goes soft in the summer sun.")
+NOTE("The XIAO clamp tab is sized for a 1.0 mm board with a 2.5 mm metal can. If yours sits loose under the tab, "
+     "put a small washer under the tab; if the tab won't lie flat, sand its underside a little.", "XIAO clamp: ")
 TABLE([["File", "What it is", "How to print"],
        ["box.stl", "The electronics box that hangs on the post", "As it comes, back plate down, no supports"],
        ["box_lid.stl", "The lid, with DIP lettering", "As it comes (already flipped)"],
@@ -321,7 +323,7 @@ P("Now test what you've built before anything goes outside. The software has to 
 STEP(1, "Plug the two ultrasonic probes into the white sockets on the sensor board (they only fit one way round).")
 STEP(2, "Solder the 3V3 and GND holes for now (you can add the cable wires later with a little more solder), then put the battery in.")
 STEP(3, "Point the probes at a wall about 1 m (3 ft) away. In Home Assistant, turn on \"DIP stay awake\" and watch \"Distance to water\". It should read about 100 cm and change when you move.")
-STEP(4, "Check \"Battery voltage\" reads 3.0-4.2 V, close to what your meter says.")
+STEP(4, "Check \"Battery voltage\" reads 3.0-4.2 V, close to what your meter says. Unplug the USB-C first: while it charges, the reading is higher than the cell really is.")
 NOTE("Also worth checking if you have a meter that reads milliamps: with DIP asleep, the whole thing should draw well under 1 mA. "
      "Much more than that and the battery won't last.", "Optional: ")
 P("If the distance stays empty or reads nonsense at 3.3V, stop here and ask for help. Don't move the sensor to the 5V pin on your own: "
@@ -383,6 +385,7 @@ H("12a. Load the firmware (first time, over USB)", 2)
 STEP(1, "Copy firmware/secrets.example.yaml to secrets.yaml and fill in the Wi-Fi name, password and an API key.")
 STEP(2, "Connect the XIAO to the computer with a USB-C cable.")
 STEP(3, "Run: esphome run firmware/dip.yaml   (or use the ESPHome Builder app in Home Assistant). It needs ESPHome 2025.7 or newer.")
+NOTE("ESPHome on a computer won't build from a folder whose name has a space in it. If it stops with a whitespace error, copy dip.yaml and secrets.yaml to a folder without spaces and run it there.", "If it fails: ")
 STEP(4, "If the board isn't found, hold the B (boot) button, tap R (reset), then let go of B, and try again.")
 P("After this first time, updates go over Wi-Fi. DIP sleeps most of the time, so first turn on \"DIP stay awake\" in "
   "Home Assistant and wait for its next wake (up to 20 minutes): it sees the switch and stays on. Turn the switch "
@@ -403,7 +406,9 @@ STEP(2, "Battery: measure the cell with the multimeter and compare it with DIP's
 H("13. Install at the pond")
 STEP(1, "Drill 3-4 holes of 1/4\" around the bottom 2-3\" of the PVC pipe so water flows in and out, and one 1/8\" vent hole near the top.")
 STEP(2, "Decide how low is \"too low\": below this the pumps all shut off. 6-8\" below the full level suits most ponds. "
-        "Screw the float bracket inside the pipe at that height with the 2 M4 screws through the pipe wall (drill the pipe first).")
+        "Screw the float bracket inside the pipe at that height with the 2 M4 screws through the pipe wall (drill the pipe first). "
+        "Or use the outside bracket: drill two 4.5 mm holes 32 mm apart side by side, M4 screws through its slots with washers outside "
+        "and nuts inside the pipe. Set the holes at the middle of the range you want: the slots let it slide 2\" up or down.")
 STEP(3, "Hang the temperature probe inside the pipe near the bottom.")
 STEP(4, "Stand the pipe in the cinder block's hole in the pond. Pack pea gravel around it, checking it's straight up and down as you go.")
 STEP(5, "Slide the pipe cap on, slot pointing toward the post. Pilot-drill the PVC through the hole in the cap's skirt and fit the short stainless screw so it can't turn or lift.")
@@ -427,7 +432,7 @@ TABLE([["What you see", "Likely cause and fix"],
        ["Float always \"low\"", "Float upside down (chapter 6) or wire 4 touching ground somewhere."],
        ["Float never triggers", "Float stuck, mounted too low, or 100k (C) missing."],
        ["Battery reading 0 or wild", "Resistor (A) not on BAT +, or (A)/(B) not soldered in hole D0."],
-       ["Battery drains in days", "It isn't going to sleep: make sure \"DIP stay awake\" is off in Home Assistant."]],
+       ["Battery drains in days", "Make sure \"DIP stay awake\" is off in Home Assistant. Use the plain holder, not a \"battery shield\" board: their 5V booster runs all the time and empties a cell in a day or two."]],
       [2.3, 4.3])
 BREAK()
 
