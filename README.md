@@ -6,16 +6,16 @@ level and temperature, and shuts the pond pumps off before they can run dry.
 ![DIP on the post, lid on](docs/guide/r_front.png)
 
 - **Level:** a dual-probe JSN-SR20 ultrasonic sensor looks down a 3" PVC "stilling pipe" standing in the pond.
-  The pipe keeps waterfalls, ripples and pond netting from confusing it. Reports every 20 minutes.
+  The pipe keeps waterfalls, ripples and pond netting from confusing it. Reports every 30 minutes.
 - **Float switch backup:** a float switch inside the same pipe wakes the board the moment the water drops below it,
-  so a leak or a stuck fill valve is caught in seconds, not 20 minutes.
+  so a leak or a stuck fill valve is caught in seconds, not 30 minutes.
 - **Water temperature:** a DS18B20 probe hangs in the pipe.
 - **What Home Assistant does with it** (`ha/dip_package.yaml`): shows the level in inches below full, turns off the
   first pump when the water drops 3", turns off all the pumps and sends a critical phone alert when the water drops
   below the float, turns them back on when the water comes back, and warns you if DIP goes quiet or its battery
   gets low. The pumps can be on any smart plug Home Assistant can switch.
 - **Power:** one 18650 cell in a plain holder, charged through the Seeed XIAO ESP32-C6's USB-C. The XIAO
-  sleeps between readings (about 20 seconds awake every 20 minutes), so a cell lasts months.
+  sleeps between readings (about 20 seconds awake every 30 minutes), so a cell lasts months.
 
 **The full build, step by step, with pictures:** [docs/DIP-assembly-guide.pdf](docs/DIP-assembly-guide.pdf) (Word version: [docx](docs/DIP-assembly-guide.docx)).
 No electronics experience needed; you test as you go.
@@ -59,9 +59,9 @@ wire 1 to the probe's red, wire 2 to the probe's black and one float wire, wire 
 ## Firmware (`firmware/`)
 
 `firmware/dip.yaml` is ESPHome.
-- Wakes every 20 minutes, or every 2 minutes while the float is low, and right away when the float drops or comes back up.
+- Wakes every 30 minutes, or every 2 minutes while the float is low, and right away when the float drops or comes back up.
 - Each time it sends the level (the middle of 5 readings), water temperature, battery voltage and %, float state and Wi-Fi signal, then sleeps.
-- Turn on **DIP stay awake** in Home Assistant to keep it awake for wireless updates. It sees the switch on its next wake, so allow up to 20 minutes. Turn it off when you're done: awake, it drains the battery in a day or two.
+- Turn on **DIP stay awake** in Home Assistant to keep it awake for wireless updates. It sees the switch on its next wake, so allow up to 30 minutes. Turn it off when you're done: awake, it drains the battery in a day or two.
 
 Setup:
 1. Copy `secrets.example.yaml` to `secrets.yaml` and fill it in (it stays out of git).

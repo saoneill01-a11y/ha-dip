@@ -138,7 +138,7 @@ B("An ultrasonic sensor looks down a 3\" PVC pipe standing in the pond and measu
   "The pipe keeps the waterfall and ripples from confusing it.")
 B("A float switch in the same pipe wakes the sensor the instant the water drops too low.")
 B("A water temperature probe hangs in the pipe.")
-B("Every 20 minutes it wakes, sends its readings to Home Assistant over Wi-Fi, and goes back to sleep. "
+B("Every 30 minutes it wakes, sends its readings to Home Assistant over Wi-Fi, and goes back to sleep. "
   "Home Assistant graphs the level, turns off one pump when the water drops 3\", and turns off all the pumps "
   "with an urgent phone alert when the water drops below the float, so they don't run dry.")
 B("It runs on one rechargeable 18650 battery for months.")
@@ -388,7 +388,7 @@ STEP(3, "Run: esphome run firmware/dip.yaml   (or use the ESPHome Builder app in
 NOTE("ESPHome on a computer won't build from a folder whose name has a space in it. If it stops with a whitespace error, copy dip.yaml and secrets.yaml to a folder without spaces and run it there.", "If it fails: ")
 STEP(4, "If the board isn't found, hold the B (boot) button, tap R (reset), then let go of B, and try again.")
 P("After this first time, updates go over Wi-Fi. DIP sleeps most of the time, so first turn on \"DIP stay awake\" in "
-  "Home Assistant and wait for its next wake (up to 20 minutes): it sees the switch and stays on. Turn the switch "
+  "Home Assistant and wait for its next wake (up to 30 minutes): it sees the switch and stays on. Turn the switch "
   "off when you're done. Left on, it drains the battery in a day or two.")
 H("12b. Add it to Home Assistant", 2)
 STEP(1, "Home Assistant usually finds DIP by itself: Settings > Devices & services, then Configure on the ESPHome device. Enter the API key.")
