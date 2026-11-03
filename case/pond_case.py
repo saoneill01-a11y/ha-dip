@@ -45,7 +45,7 @@ HOLDER_INSERT_D, HOLDER_INSERT_DEPTH = 4.1, 6.0
 # boards held in drop-in cradles (no screw holes needed): (x, y, w, d, ledge height above floor)
 SENSOR_BOARD = (48.0, 14.0, 23.0, 48.0, 7.0)     # JSN-SR20-Y1 driver board, 23 x 48 standing up, plug side toward the lid
 # v0.3 (Oct 31, 2026): moved 7 mm right (against the right wall) and 2 mm up so its wire plugs clear the battery
-# holder's lower pad. It can't go higher: the SuperMini's screw post is 0.8 mm above its top edge.
+# holder's lower pad. (v0.4: the ESP board is now a XIAO ESP32-C6, mounted in the same spot.)
 # The sensor board screws down onto 4 standoffs (its parts side faces the back plate, so 7 mm clears its button and
 # chips). Holes are 3 mm in from each corner (from the seller's photo: MEASURE yours and change SB_HOLE_INSET).
 SB_HOLE_INSET = 3.0
@@ -58,12 +58,9 @@ XIAO_PCB, XIAO_CAN = 1.0, 2.5      # board thickness, shield can height above it
 XIAO_CAN_IN = 3.5                  # the can starts this far in from the far end
 # cable clip: two posts the short USB-C cable's free end pushes between, near the top of the box
 CLIP_X, CLIP_Y, CLIP_GAP, CLIP_R, CLIP_H = 52.0, 118.0, 3.8, 2.5, 14.0
-# The SuperMini has no screw holes: its USB end slides under two corner lips (either side of the USB-C socket),
-# then a printed tab (esp_clamp.stl) screws down over its other end with one M2.5 x 6 into a post.
-# The board rests on its two short ends only, so wires soldered into the pin holes along its long edges are clear.
-SM_CLR, SM_HOOK_IN, SM_LIP_T, SM_REST = 0.4, 3.5, 2.0, 1.5
-SM_LIP_OUT = 2.5      # each lip leaves the back wall at board-top height and slopes out and UP at 45 degrees, so
-                      # it prints without supports; it catches the board's end edge (0.4 mm play). 2 mm thick at its tip.
+# The XIAO rests on its two short ends only, so wires soldered into the pin holes along its long edges are clear
+# (SUPERMINI and SM_* keep their old names; they now size the XIAO mount).
+SM_CLR, SM_REST = 0.4, 1.5
 SM_POST_R, SM_PILOT_D, SM_TAB_T, SM_TAB_W, SM_TAB_OVER = 3.4, 2.2, 2.0, 12.0, 1.8
 CRADLE_WALL, CRADLE_LEDGE, CRADLE_CLR, CRADLE_LIP = 1.8, 1.6, 0.4, 2.0
 
@@ -237,7 +234,7 @@ def supermini_mount():
 
 
 def esp_clamp():
-    """The tab that holds the SuperMini's far end down: one M2.5 x 6 through it into the post. Print flat."""
+    """The tab that holds the XIAO's far end down on its metal can: one M2.5 x 6 through it into the post. Print flat."""
     c = SM_CLR
     py_to_edge = c + SM_POST_R                                  # post centre to the board's end
     L = SM_POST_R + 1.5 + py_to_edge + XIAO_CAN_IN + 2.5   # reaches 2.5 mm onto the shield can
