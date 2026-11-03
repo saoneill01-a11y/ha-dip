@@ -53,7 +53,7 @@ def overview():
     box(ax, 2, 50, 24, 22, "18650 holder", "plain, red and black wires", fc="#f7efe2", ec="#9a6b2f")
     # XIAO (front view, USB-C at the top)
     box(ax, 44, 36, 26, 42, "XIAO ESP32-C6", "the brain, charges the cell")
-    for lab, y in [("D0", 68), ("D1", 64), ("D3", 56), ("D4", 52), ("D5", 48)]:
+    for lab, y in [("D0", 68), ("D1", 64), ("D2", 60), ("D3", 56), ("D4", 52), ("D5", 48)]:
         ax.text(45.5, y, lab, ha="left", va="center", fontsize=FS, weight="bold")
     for lab, y in [("GND", 64), ("3V3", 60)]:
         ax.text(68.5, y, lab, ha="right", va="center", fontsize=FS, weight="bold")
@@ -68,8 +68,8 @@ def overview():
     for lab, y in [("5V", 68), ("Trig", 64.5), ("Echo", 61), ("GND", 57.5)]:
         ax.text(93.5, y, lab, ha="left", va="center", fontsize=FS - 1)
     ax.text(124, 62, "2 probes plug\ninto the white\nsockets", ha="right", va="center", fontsize=FS - 2, color="#555")
-    # sensor power from 3V3 / GND
-    wire(ax, [(69, 60), (84, 60), (84, 84), (88, 84), (88, 68), (93, 68)], RED)
+    # sensor power: 5V pin from D2 (switched off in sleep), GND from GND
+    wire(ax, [(45, 60), (40, 60), (40, 86), (88, 86), (88, 68), (93, 68)], RED); ax.text(41.5, 82.5, "Sensor power (D2)", fontsize=FS - 2, color=RED)
     wire(ax, [(69, 64), (82, 64), (82, 82), (86, 82), (86, 57.5), (93, 57.5)], BLK)
     # trig / echo
     wire(ax, [(45, 52), (38, 52)], BLU); wire(ax, [(38, 52), (38, 88), (90, 88), (90, 64.5), (93, 64.5)], BLU); ax.text(60, 85.5, "Trig (D4)", fontsize=FS - 2, color=BLU)
@@ -96,7 +96,7 @@ def pins():
     ax.text(50, 33, "XIAO\nESP32-C6\nFRONT\n(metal can side)", ha="center", va="center", color="white", fontsize=FS - 1)
     left = ["D0", "D1", "D2", "D3", "D4", "D5", "D6"]
     right = ["5V", "GND", "3V3", "D10", "D9", "D8", "D7"]
-    use = {"D0": ("Batt", PUR), "D1": ("Float", ORG), "D3": ("Temp", YEL), "D4": ("Trig", BLU), "D5": ("Echo", GRN),
+    use = {"D0": ("Batt", PUR), "D1": ("Float", ORG), "D2": ("Sensor 5V", RED), "D3": ("Temp", YEL), "D4": ("Trig", BLU), "D5": ("Echo", GRN),
            "GND": ("GND", "#9a9a9a"), "3V3": ("3.3V", RED)}
     for i in range(7):
         y = 49 - i * 6

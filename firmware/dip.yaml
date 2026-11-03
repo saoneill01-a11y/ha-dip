@@ -10,6 +10,7 @@
 # Pins (see ../docs/guide/d_overview.png):
 #   D1 (GPIO1)   float switch to GND, 100k pull-up to 3V3 (wake pin; float must be OPEN when the water is normal)
 #   D0 (GPIO0)   battery voltage through a 100k/100k divider from BAT+
+#   D2 (GPIO2)   sensor VCC: powered only while awake (the sensor draws ~2 mA idle)
 #   D4 (GPIO22)  sensor Trig     D5 (GPIO23)  sensor Echo
 #   D3 (GPIO21)  DS18B20 water-temperature probe data, 4.7k pull-up to 3V3
 #   The cell goes to the XIAO's BAT + / - pads underneath; the XIAO charges it from its USB-C.
@@ -85,6 +86,17 @@ deep_sleep:
     mode: INPUT              # the 100k pull-up is on the board (internal pull-ups aren't reliable in sleep)
     allow_other_uses: true   # the float binary sensor reads the same pin
   wakeup_pin_mode: INVERT_WAKEUP   # if the float is already low, wake again when it comes back up
+
+# D2 powers the distance sensor only while awake (it draws ~2 mA idle). The pin turns on at boot
+# and goes off by itself in deep sleep.
+switch:
+  - platform: gpio
+    id: sensor_power
+    pin:
+      number: GPIO2
+      drive_strength: 40mA
+    restore_mode: ALWAYS_ON
+    internal: true
 
 script:
   - id: take_reading

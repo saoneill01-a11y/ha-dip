@@ -310,9 +310,9 @@ P("The sensor board has 4 pins sticking out, labelled 5V, Trig, Echo and GND (th
 STEP(1, "Take 4 female jumper wires. Cut each to about 12 cm, keeping the plug end. Strip and tin the cut ends.")
 STEP(2, "Plug them onto the sensor board pins. Use red for 5V and black for GND if you have them.")
 STEP(3, "Trig wire into XIAO hole D4, Echo wire into hole D5. Solder.")
-STEP(4, "5V wire into hole 3V3, GND wire into hole GND. Don't solder yet: the 4-core cable's wires 1 and 2 join them in chapter 10.")
-NOTE("Yes, the sensor's \"5V\" pin goes to 3V3. This sensor normally works on 3.3V, and running it on 3.3V keeps its signals safe for the XIAO. "
-     "The bench test in chapter 8 confirms it on your board.", "Why 3V? ")
+STEP(4, "5V wire into hole D2 and solder. GND wire into hole GND, but don't solder that yet: the 4-core cable's wire 2 joins it in chapter 10.")
+NOTE("Yes, the sensor's \"5V\" pin goes to D2. D2 gives it 3.3V only while DIP is awake. Left on 3V3, the sensor would draw about 2 mA all the time "
+     "and flatten the battery in about two months. This sensor works fine on 3.3V, which also keeps its signals safe for the XIAO.", "Why D2? ")
 WARN("Leave the MODE pad on the sensor board (two little pads top left, next to the word Mode) EMPTY. Putting a resistor there changes how the sensor talks and the readings stop.")
 BREAK()
 
@@ -321,11 +321,11 @@ H("8. Bench test")
 P("Now test what you've built before anything goes outside. The software has to be loaded first: chapter 12 explains how, "
   "but if someone else is handling the software, give them the XIAO at this point (still wired up).")
 STEP(1, "Plug the two ultrasonic probes into the white sockets on the sensor board (they only fit one way round).")
-STEP(2, "Solder the 3V3 and GND holes for now (you can add the cable wires later with a little more solder), then put the battery in.")
+STEP(2, "Solder the GND hole for now (you can add the cable wires later with a little more solder), then put the battery in.")
 STEP(3, "Point the probes at a wall about 1 m (3 ft) away. In Home Assistant, turn on \"DIP stay awake\" and watch \"Distance to water\". It should read about 100 cm and change when you move.")
 STEP(4, "Check \"Battery voltage\" reads 3.0-4.2 V, close to what your meter says. Unplug the USB-C first: while it charges, the reading is higher than the cell really is.")
-NOTE("Also worth checking if you have a meter that reads milliamps: with DIP asleep, the whole thing should draw well under 1 mA. "
-     "Much more than that and the battery won't last.", "Optional: ")
+NOTE("Also worth checking if you have a meter that reads milliamps: with DIP asleep, the whole thing should draw about 0.03 mA. "
+     "Around 2 mA means the sensor is on 3V3 instead of D2.", "Optional: ")
 P("If the distance stays empty or reads nonsense at 3.3V, stop here and ask for help. Don't move the sensor to the 5V pin on your own: "
   "at 5V its Echo signal is too strong for the XIAO and would need two extra resistors.", italic=True)
 BREAK()
@@ -355,7 +355,7 @@ H("10a. Box end", 2)
 STEP(1, "Feed the cable through the third gland into the box. Strip back about 8 cm of the outer jacket.")
 STEP(2, "Add the two pull-up resistors as shown below: the 4.7k from wire 1 to wire 3, and 100k (C) from wire 1 to wire 4. Solder each leg onto the wire with a little heat shrink over each joint.")
 IMG("d_boxend.png", 6.2)
-STEP(3, "Wire 1 into XIAO hole 3V3, alongside the sensor's 5V wire. Wire 2 into hole GND, alongside the sensor's GND wire. Solder.")
+STEP(3, "Wire 1 into XIAO hole 3V3. Wire 2 into hole GND, alongside the sensor's GND wire. Solder.")
 STEP(4, "Wire 3 to XIAO hole D3. Wire 4 to XIAO hole D1.")
 H("10b. Pipe cap end", 2)
 STEP(1, "Feed the temperature probe's cable and the float wires up through the open part of the pipe cap's plate, and the 4-core cable in through the slot in the side of the cap.")
@@ -443,7 +443,7 @@ TABLE([["From", "To", "Notes"],
        ["Holder black", "XIAO BAT -", "underneath"],
        ["Resistor (A)", "XIAO BAT + to D0", "on the underside"],
        ["Resistor (B)", "XIAO D0 to BAT -", "on the underside"],
-       ["Sensor board 5V pin", "XIAO 3V3", "female jumper; shares the hole with cable wire 1"],
+       ["Sensor board 5V pin", "XIAO D2", "female jumper; D2 powers it only while awake"],
        ["Sensor board GND pin", "XIAO GND", "female jumper; shares the hole with cable wire 2"],
        ["Sensor board Trig", "XIAO D4", ""],
        ["Sensor board Echo", "XIAO D5", ""],

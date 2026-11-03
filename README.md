@@ -29,7 +29,7 @@ No electronics experience needed; you test as you go.
 | Seeed XIAO ESP32-C6 | The brain, and it charges the cell. Wires solder straight into its pin holes (no header pins). |
 | Plain single-18650 holder with wire leads (76 x 21 x 20 mm, one hole in its floor), plus a name-brand 18650 cell | Screws to a platform in the box. Don't use a "battery shield" board with a 5V booster: it drains the cell in a day or two. |
 | Short USB-C cable | Stays plugged into the XIAO so you can charge with the lid off. |
-| JSN-SR20 dual-probe ultrasonic sensor (sold as JSN-SR20-Y1: 48 x 23 mm board, two 21.5 mm probes on cables) | Leave the MODE pad empty (normal Trig/Echo mode). It runs on 3.3V here, even though the board says 5V. |
+| JSN-SR20 dual-probe ultrasonic sensor (sold as JSN-SR20-Y1: 48 x 23 mm board, two 21.5 mm probes on cables) | Leave the MODE pad empty (normal Trig/Echo mode). It runs on 3.3V from D2 here, even though the board says 5V. |
 | Vertical float switch (M10 stem) | Must be OPEN when the water is normal. |
 | DS18B20 waterproof temperature probe (1 m) | Its included 4.7k resistor is the pull-up. |
 | 4-core outdoor cable, box to pipe cap | 3.3V, GND, temperature data and float, all through one gland. |
@@ -47,7 +47,8 @@ No electronics experience needed; you test as you go.
 |---|---|
 | BAT + / BAT - (pads underneath) | the holder's red / black wires |
 | D0 | middle of the 100k/100k battery divider: 100k (A) to BAT +, 100k (B) to BAT - |
-| 3V3 / GND | the sensor's 5V / GND pins, and 4-core wires 1 / 2 |
+| D2 | the sensor's 5V pin (D2 powers it only while awake; on 3V3 it draws ~2 mA in sleep) |
+| 3V3 / GND | 4-core wires 1 / 2; GND also to the sensor's GND pin |
 | D4 / D5 | sensor Trig / Echo |
 | D3 | 4-core wire 3, temperature data (4.7k from wire 1) |
 | D1 | 4-core wire 4, float (100k (C) from wire 1). Wakes the board. The float must be OPEN when the water is normal |
