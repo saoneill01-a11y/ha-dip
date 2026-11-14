@@ -67,14 +67,14 @@ wifi:
   password: !secret wifi_password
   fast_connect: true         # skip the scan: connect straight to the SSID (saves battery)
   power_save_mode: none
-  # Pin it to one access point and a static IP so each wake-up connects in about a second.
-  # Fill these in from your network, then uncomment:
+  # Static IP so each wake-up skips DHCP (192.168.190.231, outside the Sophos DHCP range).
+  # Pinning to one access point (bssid) would save a bit more, but stays off so DIP can roam.
   # bssid: !secret wifi_bssid
-  # manual_ip:
-  #   static_ip: !secret static_ip
-  #   gateway: !secret gateway
-  #   subnet: 255.255.255.0
-  #   dns1: !secret dns
+  manual_ip:
+    static_ip: !secret static_ip
+    gateway: !secret gateway
+    subnet: 255.255.255.0
+    dns1: !secret dns
 
 deep_sleep:
   id: sleeper
